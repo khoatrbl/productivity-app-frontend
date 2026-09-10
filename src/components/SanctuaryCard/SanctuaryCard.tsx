@@ -52,7 +52,7 @@ function SanctuaryCard({ profile }: SanctuaryCardProps) {
         </div>
 
         <span className="text-xs text-gray-500 whitespace-nowrap font-medium">
-          {profile.xp} / {profile.maxXp} XP
+          {profile.xp} / {profile.maxXp} EXP
         </span>
       </div>
     </div>

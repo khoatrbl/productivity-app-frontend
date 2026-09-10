@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { Timer, PawPrint, Calendar, Award, Settings } from "lucide-react";
 
 const navItems = [
-  { to: "/", label: "Focus", icon: Timer, end: true },
+  { to: "/", label: "Dashboard", icon: Timer, end: true },
   { to: "/sanctuary", label: "Sanctuary", icon: PawPrint },
   { to: "/calendar", label: "Calendar", icon: Calendar },
   { to: "/stats", label: "Stats", icon: Award },
