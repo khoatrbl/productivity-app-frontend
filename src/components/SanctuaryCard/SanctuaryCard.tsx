@@ -9,7 +9,7 @@ function SanctuaryCard({ profile }: SanctuaryCardProps) {
   const progress = Math.min((profile.xp / profile.maxXp) * 100, 100);
 
   return (
-    <div className="border-b border-gray-200 bg-[#fcf8f2] px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-[0_0_0_1.5px_rgba(196,181,253,0.15)]">
+    <div className="border-b border-gray-200 bg-white/80 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-[0_0_0_1.5px_rgba(196,181,253,0.15)]">
       {/* Top row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
