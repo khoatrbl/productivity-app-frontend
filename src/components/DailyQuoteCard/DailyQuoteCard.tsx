@@ -1,7 +1,7 @@
 // QuoteCard.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, ChevronDown } from "lucide-react";
+import { Sparkles, ChevronDown, ArrowRight } from "lucide-react";
 
 const TRUNCATE_THRESHOLD = 55;
 
@@ -39,8 +39,19 @@ function QuoteContent({ quote, mode }: { quote: string; mode: "intro" | "card" }
   );
 }
 
+interface QuoteIntroOverlayProps {
+  quote: string;
+  duration?: number; // ms
+  onDismiss: () => void;
+}
+
 // Fixed, full-screen — only rendered during the intro
-export function QuoteIntroOverlay({ quote }: { quote: string }) {
+export function QuoteIntroOverlay({ quote, duration = 5000, onDismiss }: QuoteIntroOverlayProps) {
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, duration);
+    return () => clearTimeout(timer);
+  }, [duration, onDismiss]);
+
   return (
     <>
       <motion.div
@@ -51,9 +62,35 @@ export function QuoteIntroOverlay({ quote }: { quote: string }) {
       />
       <motion.div
         layoutId="daily-quote-card"
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
         className="fixed left-1/2 top-1/2 z-50 flex h-1/3 w-[85%] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-3 rounded-3xl border border-orange-200 bg-orange-50 px-6 text-center shadow-xl"
       >
-        <QuoteContent quote={quote} mode="intro" />
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-100 text-orange-500">
+          <Sparkles className="h-5 w-5" />
+        </div>
+        <p className="text-sm font-semibold text-orange-500">Daily Pulse</p>
+        <p className="text-lg font-medium leading-snug text-gray-800">"{quote}"</p>
+
+        {/* Countdown progress bar */}
+        <div className="h-1 w-full max-w-[250px] overflow-hidden rounded-full bg-[#8DB498] my-3">
+          <motion.div
+            className="h-full rounded-full bg-[#41664E]"
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: duration / 1000, ease: "linear" }}
+          />
+        </div>
+
+        <button
+          onClick={onDismiss}
+          className="flex justify-center gap-2 rounded-full w-full border border-[#41664E] px-4 py-1.5 text-base font-medium text-[#41664E] transition-colors duration-200 hover:bg-[#41664E] hover:text-white"
+        >
+          Step into Dashboard 
+          <span>
+            <ArrowRight/>
+          </span>
+        </button>
       </motion.div>
     </>
   );

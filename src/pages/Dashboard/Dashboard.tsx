@@ -11,22 +11,17 @@ function Dashboard() {
 
     useEffect(() => {
         if (showIntro) {
+            // **TODO**: Implement this logic to stop the animation from repeating
             // sessionStorage.removeItem("justLoggedIn");
         }
-
-        if (phase !== "intro") {
-            return;
-        }
-
-        const timer = setTimeout(() => setPhase("card"), 5000);
-
-        return () => clearTimeout(timer);
     }, []);
 
     return (
         <>
             <AnimatePresence mode="popLayout">
-                {phase === "intro" && <QuoteIntroOverlay quote={quote} />}
+                {phase === "intro" && (
+                    <QuoteIntroOverlay quote={quote} onDismiss={() => setPhase("card")} />
+                )}
             </AnimatePresence>
 
             <div className="px-2">
