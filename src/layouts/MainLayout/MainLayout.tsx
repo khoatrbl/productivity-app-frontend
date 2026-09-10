@@ -1,12 +1,49 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import BottomNavigation from "../../components/BottomNavigation/BottomNavigation";
 import SanctuaryCard from "../../components/SanctuaryCard/SanctuaryCard";
 import { mockSanctuary } from "../../data/mockSantuaryProfile";
+import { useSwipeable } from "react-swipeable";
 
-
+const swipeRoutes = [
+  "/",
+  "/sanctuary",
+  "/calendar",
+  "/stats",
+  "/settings",
+];
 
 function MainLayout() {
     const sanctuaryProfile = mockSanctuary;
+
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const currentIndex = swipeRoutes.indexOf(location.pathname);
+
+    const goToPreviousPage = () => {
+        const previousIndex = (currentIndex - 1 + swipeRoutes.length) % swipeRoutes.length;
+
+        navigate(swipeRoutes[previousIndex]);
+    };
+
+    const goToNextPage = () => {
+        const nextIndex = (currentIndex + 1) % swipeRoutes.length;
+
+        navigate(swipeRoutes[nextIndex]);
+    };
+
+    const swipeHandlers = useSwipeable({
+        onSwipedLeft: () => {
+        goToNextPage();
+        },
+
+        onSwipedRight: () => {
+        goToPreviousPage();
+        },
+
+        preventScrollOnSwipe: false,
+        trackMouse: false,
+    });
     
     return (
         <div className="main-layout min-h-screen">
@@ -15,7 +52,7 @@ function MainLayout() {
             </header>
             
 
-            <main className="page-content pt-[115px] pb-[80px]">
+            <main {...swipeHandlers} className="page-content pt-[115px] pb-[80px]">
                 <Outlet/>
             </main> 
 
