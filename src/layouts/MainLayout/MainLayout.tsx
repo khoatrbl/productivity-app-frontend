@@ -10,7 +10,7 @@ function MainLayout() {
     
     return (
         <div className="main-layout min-h-screen">
-            <header className="fixed top-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2">
+            <header className="fixed top-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 pt-[max(0.5rem,env(safe-area-inset-top))] bg-bg-[#fcf8f2]">
                 <SanctuaryCard profile={sanctuaryProfile} />
             </header>
             
