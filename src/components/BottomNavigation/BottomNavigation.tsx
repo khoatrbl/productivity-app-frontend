@@ -11,8 +11,8 @@ const navItems = [
 
 function BottomNavigation() {
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 border-t bg-white/80 backdrop-blur-lg">
-      <div className="flex justify-around items-center px-2 py-2">
+    <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 border-t bg-white/80 backdrop-blur-lg pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="flex justify-around items-center px-2 pt-2">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
