@@ -21,14 +21,12 @@ function MainLayout() {
     const currentIndex = swipeRoutes.indexOf(location.pathname);
 
     const goToPreviousPage = () => {
-        console.log("Swiped, previous page.");
         const previousIndex = (currentIndex - 1 + swipeRoutes.length) % swipeRoutes.length;
 
         navigate(swipeRoutes[previousIndex]);
     };
 
     const goToNextPage = () => {
-        console.log("Swiped, next page.")
         const nextIndex = (currentIndex + 1) % swipeRoutes.length;
 
         navigate(swipeRoutes[nextIndex]);
@@ -44,7 +42,7 @@ function MainLayout() {
         },
 
         preventScrollOnSwipe: false,
-        trackMouse: true,
+        trackMouse: false,
         trackTouch: true
     });
     
