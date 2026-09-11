@@ -16,7 +16,7 @@ function SwipeToDelete({ onDelete, children, threshold = 96 }: SwipeToDeleteProp
   }
 
   return (
-    <div className="relative overflow-hidden rounded-3xl">
+    <div className="relative overflow-hidden rounded-3xl data-swipeable-card">
       <motion.div
         style={{ opacity: deleteOpacity }}
         className="absolute inset-0 flex items-center justify-end rounded-3xl bg-red-500 pr-6"
