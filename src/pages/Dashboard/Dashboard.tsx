@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { getDailyQuote } from "../../data/mockQuoteDate";
 import { QuoteIntroOverlay, QuoteCardInline } from "../../components/DailyQuoteCard/DailyQuoteCard";
+import { mockTaskCardData } from "../../data/mockTaskCardData";
 import { AnimatePresence } from "framer-motion";
+import TaskBoard from "../../components/TaskBoard/TaskBoard";
+
 
 function Dashboard() {
     // const [showIntro] = useState(() => sessionStorage.getItem("justLoggedIn") === "true");
@@ -27,6 +30,9 @@ function Dashboard() {
             <div className="px-2">
                 {phase === "card" && <QuoteCardInline quote={quote} />}
                 {/* SanctuaryCard and rest of your dashboard content go here */}
+
+                <TaskBoard initialTasks={mockTaskCardData} />
+
             </div>
         </>
     );
