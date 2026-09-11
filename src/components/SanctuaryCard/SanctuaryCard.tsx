@@ -1,7 +1,6 @@
 import { Award, Coins } from "lucide-react";
 import type { SanctuaryProfile } from "../../types/SanctuaryProfile";
 
-import avatar from '../../assets/heize.jpg';
 import appLogo from '../../../public/capydo-logo-512x512.png'
 
 interface SanctuaryCardProps {
