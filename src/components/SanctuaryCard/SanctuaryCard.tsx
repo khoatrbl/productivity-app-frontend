@@ -1,6 +1,9 @@
 import { Award, Coins } from "lucide-react";
 import type { SanctuaryProfile } from "../../types/SanctuaryProfile";
 
+import avatar from '../../assets/heize.jpg';
+import appLogo from '../../../public/capydo-logo-512x512.png'
+
 interface SanctuaryCardProps {
   profile: SanctuaryProfile;
 }
@@ -13,9 +16,9 @@ function SanctuaryCard({ profile }: SanctuaryCardProps) {
       {/* Top row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-xl">
-            🦫
-          </div>
+          
+          <img src={appLogo} alt="avatar" className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-xl"/>
+          
           <div>
             <p className="font-semibold text-gray-900 leading-tight">{profile.name}</p>
             <p className="text-sm text-gray-400 leading-tight">{profile.subtitle}</p>
