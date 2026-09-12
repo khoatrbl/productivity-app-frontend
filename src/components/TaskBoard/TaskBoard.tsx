@@ -36,10 +36,11 @@ function TaskBoard({ initialTasks }: TaskBoardProps) {
   return (
     <div className="flex flex-col gap-3">
       <AnimatePresence initial={false}>
-        {tasks.map((task) => (
+        {tasks.map((task, index) => (
           <motion.div
             key={task.id}
             layout
+            style={{ zIndex: 0 }}
             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
@@ -48,6 +49,7 @@ function TaskBoard({ initialTasks }: TaskBoardProps) {
               <TaskCard
                 task={task}
                 isAnyTaskActive={isAnyTaskActive}
+                isForcedExpanded={index === 0}
                 onStart={() => updateStatus(task.id, TaskStatus.IN_PROGRESS)}
                 onPause={() => updateStatus(task.id, TaskStatus.INCOMPLETE)}
                 onFinish={() => updateStatus(task.id, TaskStatus.COMPLETE)}

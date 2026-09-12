@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, ChevronDown, ArrowRight } from "lucide-react";
+import { createPortal } from "react-dom";
 
 const TRUNCATE_THRESHOLD = 55;
 
@@ -52,7 +53,7 @@ export function QuoteIntroOverlay({ quote, duration = 5000, onDismiss }: QuoteIn
     return () => clearTimeout(timer);
   }, [duration, onDismiss]);
 
-  return (
+  return createPortal(
     <>
       <motion.div
         initial={{ opacity: 0 }}
@@ -92,7 +93,8 @@ export function QuoteIntroOverlay({ quote, duration = 5000, onDismiss }: QuoteIn
           </span>
         </button>
       </motion.div>
-    </>
+    </>,
+    document.body
   );
 }
 
@@ -101,7 +103,8 @@ export function QuoteCardInline({ quote }: { quote: string }) {
   return (
     <motion.div
       layoutId="daily-quote-card"
-      className="mb-2 flex w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 shadow-sm"
+      className="mb-2 z-10 flex w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 shadow-sm"
+      style={{position: "relative", zIndex:30}}
     >
       <QuoteContent quote={quote} mode="card" />
     </motion.div>

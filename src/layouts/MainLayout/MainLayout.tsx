@@ -34,7 +34,8 @@ function MainLayout() {
 
     return (
         <div className="main-layout min-h-screen">
-            <header className="fixed top-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 bg-[#fcf8f2]">
+            // header in MainLayout.tsx
+            <header className="fixed top-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 bg-[#fcf8f2]">
                 <SanctuaryCard profile={sanctuaryProfile} />
             </header>
 
@@ -43,7 +44,7 @@ function MainLayout() {
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0}
                 onDragEnd={handleDragEnd}
-                className="page-content pt-[115px] pb-[80px] touch-pan-y"
+                className="page-content pt-[93px] pb-[80px] touch-pan-y"
             >
                 <Outlet />
             </motion.main>
