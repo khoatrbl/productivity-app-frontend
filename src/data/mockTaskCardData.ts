@@ -18,12 +18,14 @@ export const mockTaskCardData : TaskCardData[] = [
                 id: "subtask-1-1",
                 title: "Clean the toilet.",
                 expGain: 25,
+                position: 1,
                 isCompleted: true
             },
             {
                 id:"subtask-1-2",
                 title: "Sweep the house.",
                 expGain: 25,
+                position: 2,
                 isCompleted: false
             }
 
@@ -45,12 +47,14 @@ export const mockTaskCardData : TaskCardData[] = [
                 id: "subtask-2-1",
                 title: "Make the bed.",
                 expGain: 25,
+                position: 1,
                 isCompleted: true
             },
             {
                 id: "subtask-2-2",
                 title: "Sweep the house.",
                 expGain: 25,
+                position: 2,
                 isCompleted: false
             }
 

@@ -5,6 +5,7 @@ export interface SubTask {
     id: string,
     title: string,
     expGain: number,
+    position: number,
     isCompleted: boolean
 }
 

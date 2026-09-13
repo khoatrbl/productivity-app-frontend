@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Sparkles, ChevronDown, ArrowRight } from "lucide-react";
 import { createPortal } from "react-dom";
 
-const TRUNCATE_THRESHOLD = 55;
+const TRUNCATE_THRESHOLD = 45;
 
 function QuoteContent({ quote, mode }: { quote: string; mode: "intro" | "card" }) {
   const [expanded, setExpanded] = useState(false);
@@ -72,6 +72,7 @@ export function QuoteIntroOverlay({ quote, duration = 5000, onDismiss }: QuoteIn
         </div>
         <p className="text-sm font-semibold text-orange-500">Daily Pulse</p>
         <p className="text-lg font-medium leading-snug text-gray-800">"{quote}"</p>
+        <p className="text-sm text-gray-800 leading-snug">- Unknown</p>
 
         {/* Countdown progress bar */}
         <div className="h-1 w-full max-w-[250px] overflow-hidden rounded-full bg-[#8DB498] my-3">
