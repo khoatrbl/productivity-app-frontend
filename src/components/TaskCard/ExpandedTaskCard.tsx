@@ -74,9 +74,7 @@ function ExpandedTaskCard({
           <ListChecks className="h-4 w-4" />
           Micro-Steps ({completedCount}/{task.subTasks.length})
         </div>
-        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
-          +10 XP each
-        </span>
+      
       </div>
 
       <ul className="mt-3 space-y-2">
