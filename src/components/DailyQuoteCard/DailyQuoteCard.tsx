@@ -65,7 +65,7 @@ export function QuoteIntroOverlay({ quote, duration = 5000, onDismiss }: QuoteIn
         layoutId="daily-quote-card"
         exit={{ opacity: 0 }}
         transition={{ duration: 0.25 }}
-        className="fixed left-1/2 top-1/2 z-50 flex h-1/3 w-[85%] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-3 rounded-3xl border border-orange-200 bg-orange-50 px-6 text-center shadow-xl"
+        className="fixed left-1/2 top-1/2 z-50 flex min-h-[33vh] w-[85%] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-5 rounded-3xl border border-orange-200 bg-orange-50 px-6 py-6 text-center shadow-xl"
       >
         <div className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-100 text-orange-500">
           <Sparkles className="h-5 w-5" />
