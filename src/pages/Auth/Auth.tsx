@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn, Smile, Eye, EyeOff, Rocket } from "lucide-react";
 import capyDoLogo from "../../assets/capydo-logo-512x512.png"
@@ -12,7 +12,7 @@ function Auth() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSubmit(e: FormEvent) {
+  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     // TODO: replace with a real auth API call once the backend exists
     localStorage.setItem("capydo_auth", "true");
@@ -25,8 +25,7 @@ function Auth() {
       {/* Logo */}
       <div className="relative">
         <img src={capyDoLogo} className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-4xl"/>
-          🦫
-        
+
         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-orange-200 px-2.5 py-0.5 text-[11px] font-medium text-orange-700">
           🐾 Cozy
         </span>
