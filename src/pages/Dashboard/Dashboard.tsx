@@ -14,8 +14,7 @@ function Dashboard() {
 
     useEffect(() => {
         if (showIntro) {
-            // **TODO**: Implement this logic to stop the animation from repeating
-            // sessionStorage.removeItem("justLoggedIn");
+            sessionStorage.removeItem("justLoggedIn");
         }
     }, []);
 

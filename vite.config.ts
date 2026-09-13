@@ -14,8 +14,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
 
       manifest: {
-        name: 'Focus',
-        short_name: 'Focus',
+        name: 'CapyDo: Focus',
+        short_name: 'CapyDo',
         description: 'A simple productivity app',
         theme_color: '#ffffff',
         background_color: '#ffffff',
