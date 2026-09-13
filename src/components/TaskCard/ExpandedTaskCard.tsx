@@ -1,11 +1,14 @@
-import { CheckCircle2, Circle, ListChecks, ChevronUp } from "lucide-react";
+import { CheckCircle2, Circle, ListChecks, ChevronUp, Sparkles } from "lucide-react";
 import type { TaskCardData } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
+
+const START_TASK_XP = 15;
 
 interface ExpandedTaskCardProps {
   task: TaskCardData;
   isAnyTaskActive: boolean;
   isCollapsible: boolean;
+  hasEarnedStartXp: boolean;
   onStart: () => void;
   onPause: () => void;
   onFinish: () => void;
@@ -17,6 +20,7 @@ function ExpandedTaskCard({
   task,
   isAnyTaskActive,
   isCollapsible,
+  hasEarnedStartXp,
   onStart,
   onPause,
   onFinish,
@@ -41,6 +45,10 @@ function ExpandedTaskCard({
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+            <Sparkles className="h-3 w-3" />
+            {task.totalExp} XP
+          </div>
           <div className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-500">
             Est. {task.estimateMin} min
           </div>
@@ -105,9 +113,10 @@ function ExpandedTaskCard({
           <button
             onClick={onStart}
             disabled={isAnyTaskActive}
-            className="w-full rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex w-full items-center justify-center gap-1.5 rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
           >
             Start Task
+            {!hasEarnedStartXp && <span className="text-emerald-200">+{START_TASK_XP} XP</span>}
           </button>
         )}
 
@@ -121,9 +130,10 @@ function ExpandedTaskCard({
             </button>
             <button
               onClick={onFinish}
-              className="flex-[2] rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white hover:bg-emerald-900"
+              className="flex flex-[2] items-center justify-center gap-1.5 rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white hover:bg-emerald-900"
             >
               Finish Task
+              <span className="text-emerald-200">+{task.totalExp} XP</span>
             </button>
           </div>
         )}

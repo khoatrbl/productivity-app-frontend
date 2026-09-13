@@ -8,6 +8,7 @@ interface TaskCardProps {
   task: TaskCardData;
   isAnyTaskActive: boolean;
   isForcedExpanded: boolean; // true for the first task in the list
+  hasEarnedStartXp: boolean; // true once this task's one-time +15 XP has been claimed
   onStart: () => void;
   onPause: () => void;
   onFinish: () => void;
@@ -18,6 +19,7 @@ function TaskCard({
   task,
   isAnyTaskActive,
   isForcedExpanded,
+  hasEarnedStartXp,
   onStart,
   onPause,
   onFinish,
@@ -51,6 +53,7 @@ function TaskCard({
       task={task}
       isAnyTaskActive={isAnyTaskActive}
       isCollapsible={isCollapsible}
+      hasEarnedStartXp={hasEarnedStartXp}
       onStart={onStart}
       onPause={onPause}
       onFinish={onFinish}

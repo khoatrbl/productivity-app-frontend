@@ -4,6 +4,9 @@ import type { TaskCardData } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
 import TaskCard from "../TaskCard/TaskCard";
 import SwipeToDelete from "../SwipeToDelete/SwipeToDelete";
+import { useSanctuary } from "../../context/SanctuaryContext";
+
+const START_TASK_XP = 15;
 
 interface TaskBoardProps {
   initialTasks: TaskCardData[];
@@ -11,10 +14,28 @@ interface TaskBoardProps {
 
 function TaskBoard({ initialTasks }: TaskBoardProps) {
   const [tasks, setTasks] = useState(initialTasks);
+  // Tracks which tasks have already paid out the one-time start bonus,
+  // so pause -> restart can't be farmed for repeat +15 XP.
+  const [startedTaskIds, setStartedTaskIds] = useState<Set<string>>(new Set());
+  const { addExp } = useSanctuary();
   const isAnyTaskActive = tasks.some((t) => t.status === TaskStatus.IN_PROGRESS);
 
   function updateStatus(id: string, status: TaskCardData["status"]) {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+  }
+
+  function handleStart(task: TaskCardData) {
+    updateStatus(task.id, TaskStatus.IN_PROGRESS);
+
+    if (!startedTaskIds.has(task.id)) {
+      addExp(START_TASK_XP);
+      setStartedTaskIds((prev) => new Set(prev).add(task.id));
+    }
+  }
+
+  function handleFinish(task: TaskCardData) {
+    updateStatus(task.id, TaskStatus.COMPLETE);
+    addExp(task.totalExp);
   }
 
   function toggleSubtask(taskId: string, subtaskIndex: number) {
@@ -50,10 +71,11 @@ function TaskBoard({ initialTasks }: TaskBoardProps) {
                 task={task}
                 isAnyTaskActive={isAnyTaskActive}
                 isForcedExpanded={index === 0}
-                onStart={() => updateStatus(task.id, TaskStatus.IN_PROGRESS)}
+                hasEarnedStartXp={startedTaskIds.has(task.id)}
+                onStart={() => handleStart(task)}
                 onPause={() => updateStatus(task.id, TaskStatus.INCOMPLETE)}
-                onFinish={() => updateStatus(task.id, TaskStatus.COMPLETE)}
-                onToggleSubtask={(index) => toggleSubtask(task.id, index)}
+                onFinish={() => handleFinish(task)}
+                onToggleSubtask={(subtaskIndex) => toggleSubtask(task.id, subtaskIndex)}
               />
             </SwipeToDelete>
           </motion.div>
