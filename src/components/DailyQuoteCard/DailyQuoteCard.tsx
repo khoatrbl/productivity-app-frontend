@@ -105,7 +105,7 @@ export function QuoteCardInline({ quote }: { quote: string }) {
     <motion.div
       layoutId="daily-quote-card"
       className="mb-2 z-10 flex w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 shadow-sm"
-      style={{position: "relative", zIndex:30}}
+      style={{position: "relative", zIndex: 10 }}
     >
       <QuoteContent quote={quote} mode="card" />
     </motion.div>
