@@ -2,7 +2,7 @@ import { motion, type PanInfo } from "framer-motion";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import BottomNavigation from "../../components/BottomNavigation/BottomNavigation";
 import SanctuaryCard from "../../components/SanctuaryCard/SanctuaryCard";
-import { mockSanctuary } from "../../data/mockSantuaryProfile";
+// import { mockSanctuary } from "../../data/mockSantuaryProfile";
 import { SanctuaryProvider } from "../../context/SanctuaryContext";
 
 const swipeRoutes = ["/", "/sanctuary", "/calendar", "/stats", "/settings"];
@@ -10,7 +10,7 @@ const NAV_SWIPE_THRESHOLD = 60;
 const NAV_SWIPE_VELOCITY = 500;
 
 function MainLayout() {
-    const sanctuaryProfile = mockSanctuary;
+    // const sanctuaryProfile = mockSanctuary;
     const navigate = useNavigate();
     const location = useLocation();
     const currentIndex = swipeRoutes.indexOf(location.pathname);
@@ -33,17 +33,10 @@ function MainLayout() {
     }
 
     return (
-        <SanctuaryProvider
-            initial={{
-                level: sanctuaryProfile.level,
-                xp: sanctuaryProfile.xp,
-                maxXp: sanctuaryProfile.maxXp,
-                coins: sanctuaryProfile.coins,
-            }}
-        >
+        <SanctuaryProvider>
             <div className="main-layout min-h-screen">
                 <header className="fixed top-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 bg-[#fcf8f2]">
-                    <SanctuaryCard profile={sanctuaryProfile} />
+                    <SanctuaryCard />
                 </header>
 
                 <motion.main

@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect, type  SubmitEvent} from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn, Smile, Eye, EyeOff, Rocket, Globe } from "lucide-react";
+import { login, register } from "../../services/authServices";
+import { useAuth } from "../../context/AuthContext";
+import { ApiError } from "../../lib/apiClient";
+
 import capyDoLogo from "../../assets/capydo-logo-512x512.png"
 
 type AuthMode = "signin" | "register";
@@ -35,8 +39,10 @@ function detectTimezone(): string {
 
 function Auth() {
   const navigate = useNavigate();
+  const { setToken } = useAuth(); 
   const [mode, setMode] = useState<AuthMode>("signin");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formCardRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +61,7 @@ function Auth() {
     }
   }, [mode]);
 
-  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
@@ -64,12 +70,29 @@ function Auth() {
       return;
     }
 
-    // TODO: replace with a real auth API call once the backend exists
-    // Register payload would be: { email, password, displayName, timezone }
-    // Sign-in payload would be: { identifier: email, password }
-    localStorage.setItem("capydo_auth", "true");
-    sessionStorage.setItem("justLoggedIn", "true");
-    navigate("/");
+    setIsSubmitting(true);
+    try {
+      const { token } =
+        mode === "signin"
+          ? await login(email, password)
+          : await register({ email, password, displayName, timezone });
+
+      setToken(token);
+      sessionStorage.setItem("justLoggedIn", "true");
+      navigate("/");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(
+          err.status === 401
+            ? "That email or password doesn't match our records."
+            : err.message
+        );
+      } else {
+        setError("Something went wrong — check your connection and try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -239,10 +262,11 @@ function Auth() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-800 py-3.5 text-sm font-semibold text-white hover:bg-emerald-900"
           >
-            {mode === "signin" ? "Begin Today's Journey" : "Create My Sanctuary"}
-            <Rocket className="h-4 w-4" />
+            {isSubmitting ? "One moment..." : mode === "signin" ? "Begin Today's Journey" : "Create My Sanctuary"}
+            {!isSubmitting && <Rocket className="h-4 w-4" />}
           </button>
         </form>
       </div>

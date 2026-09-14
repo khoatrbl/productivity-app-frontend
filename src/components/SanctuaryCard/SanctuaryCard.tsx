@@ -1,17 +1,11 @@
 import { Award, Coins } from "lucide-react";
-import type { SanctuaryProfile } from "../../types/SanctuaryProfile";
 import { useSanctuary } from "../../context/SanctuaryContext";
-
 import appLogo from '../../../public/capydo-logo-512x512.png'
-import {motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface SanctuaryCardProps {
-  profile: SanctuaryProfile;
-}
-
-function SanctuaryCard({ profile }:  SanctuaryCardProps ) {
-  const { level, xp, maxXp, coins, recentGains, clearGain } = useSanctuary();
-  const progress = Math.min((xp / maxXp) * 100, 100);
+function SanctuaryCard() {
+  const { name, subtitle, avatarUrl, level, exp, maxExp, coins, recentGains, clearGain } = useSanctuary();
+  const progress = Math.min((exp / maxExp) * 100, 100);
 
   return (
     <div className="border-b border-gray-200 bg-white px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-[0_1.5px_0_0px_rgba(196,181,253,0.15),_1.5px_0_0_0px_rgba(196,181,253,0.15),_-1.5px_0_0_0px_rgba(196,181,253,0.15)]">
@@ -19,10 +13,10 @@ function SanctuaryCard({ profile }:  SanctuaryCardProps ) {
       {/* Top row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src={appLogo} alt="avatar" className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-xl"/>
+          <img src={appLogo} alt="App logo" className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-xl" />
           <div>
-            <p className="font-semibold text-gray-900 leading-tight">{profile.name}</p>
-            <p className="text-sm text-gray-400 leading-tight">{profile.subtitle}</p>
+            <p className="font-semibold text-gray-900 leading-tight">{name}</p>
+            <p className="text-sm text-gray-400 leading-tight">{subtitle}</p>
           </div>
         </div>
 
@@ -31,8 +25,8 @@ function SanctuaryCard({ profile }:  SanctuaryCardProps ) {
             <Coins className="h-4 w-4 text-amber-500" />
             <span className="text-sm font-semibold text-amber-700">{coins}</span>
           </div>
-          {profile.avatarUrl && (
-            <img src={profile.avatarUrl} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
+          {avatarUrl && (
+            <img src={avatarUrl} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
           )}
         </div>
       </div>
@@ -72,7 +66,7 @@ function SanctuaryCard({ profile }:  SanctuaryCardProps ) {
         </div>
 
         <span className="text-sm text-gray-400 whitespace-nowrap">
-          {xp} / {maxXp} XP
+          {exp} / {maxExp} XP
         </span>
       </div>
     </div>
