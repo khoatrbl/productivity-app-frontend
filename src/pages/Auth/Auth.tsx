@@ -82,7 +82,7 @@ function Auth() {
         </span>
       </div>
 
-      <h1 className="mt-6 text-2xl font-bold text-emerald-900">CapyDo</h1>
+      <h1 className="mt-3 text-2xl font-bold text-emerald-900">CapyDo</h1>
       <p className="mt-1 max-w-[240px] text-center text-sm text-gray-500">
         Your gentle, dopamine-rich focus companion
       </p>
@@ -138,7 +138,7 @@ function Auth() {
 
           <div>
             <label className="text-xs font-semibold tracking-wide text-gray-600">
-              {mode === "signin" ? "EMAIL OR NICKNAME" : "EMAIL"}
+              {mode === "signin" ? "YOUR EMAIL" : "EMAIL"}
             </label>
             <div className="mt-1.5 flex items-center gap-2 rounded-2xl bg-gray-50 px-4 py-3">
               <span className="text-gray-400">@</span>

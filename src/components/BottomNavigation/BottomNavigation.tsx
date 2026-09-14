@@ -12,7 +12,7 @@ const navItems = [
 function BottomNavigation() {
   return (
     // BottomNavigation.tsx
-    <nav className="bottom-navigation fixed bottom-0 z-30 w-full border-t backdrop-blur-lg pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+    <nav className="bottom-navigation fixed bottom-0 z-30 w-full max-w-[430px] border-t backdrop-blur-lg pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <div className="flex justify-around items-center px-2 pt-2">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink

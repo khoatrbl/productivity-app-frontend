@@ -7,8 +7,7 @@ import TaskBoard from "../../components/TaskBoard/TaskBoard";
 
 
 function Dashboard() {
-    // const [showIntro] = useState(() => sessionStorage.getItem("justLoggedIn") === "true");
-    const [showIntro] = useState(true);
+    const [showIntro] = useState(() => sessionStorage.getItem("justLoggedIn") === "true");
     const [phase, setPhase] = useState<"intro" | "card">(showIntro ? "intro" : "card");
     const quote = getDailyQuote();
 
