@@ -2,8 +2,6 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { getProfile } from "../services/sanctuaryService";
 import { useAuth } from "./AuthContext";
 
-import mockAvatar from "../assets/angry_capybara_working.jpg"
-
 interface SanctuaryState {
   name: string;
   subtitle: string;
