@@ -18,7 +18,7 @@ function CollapsedTaskCard({ task, onExpand }: CollapsedTaskCardProps) {
         <p className="truncate font-medium text-gray-800">{task.title}</p>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-400">
           <span>{task.estimateMin}m</span>
-          <span>{formatDueDateTime(task.dueDate, task.dueTime)}</span>
+          <span className="text-red-500">{formatDueDateTime(task.dueDate, task.dueTime)}</span>
           <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
             <ListChecks className="h-3 w-3" />
             {task.subTasks.length} steps

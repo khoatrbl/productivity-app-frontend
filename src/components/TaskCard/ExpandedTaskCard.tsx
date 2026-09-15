@@ -1,6 +1,7 @@
 import { CheckCircle2, Circle, ListChecks, ChevronUp, Sparkles } from "lucide-react";
 import type { TaskCardData } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
+import { formatDueDateTime } from "../../utils/taskFormatter";
 
 const START_TASK_XP = 15;
 
@@ -64,10 +65,14 @@ function ExpandedTaskCard({
         </div>
       </div>
 
-      <h3 className="mt-3 text-xl font-semibold leading-snug text-gray-900">{task.title}</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="mt-3 text-xl font-semibold leading-snug text-gray-900">{task.title}</h3>
+        <span className="mt-3 text-red-500 text-xs font-medium">{formatDueDateTime(task.dueDate, task.dueTime)}</span>
+      </div>
+      
       <p className="mt-1 text-sm text-gray-500">{task.description}</p>
 
-      <div className="my-4 border-t border-gray-100" />
+      <div className="my-4 border-t border-gray-200" />
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">

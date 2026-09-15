@@ -1,6 +1,7 @@
 import { Award, Coins } from "lucide-react";
 import { useSanctuary } from "../../context/SanctuaryContext";
 import appLogo from "../../assets/capydo-logo-512x512.png"
+import defaultAvatar from "../../assets/angry_capybara_working.jpg"
 import { motion, AnimatePresence } from "framer-motion";
 import SanctuaryCardSkeleton from "./SanctuaryCardSkeleton";
 
@@ -31,9 +32,9 @@ function SanctuaryCard() {
             <Coins className="h-4 w-4 text-amber-500" />
             <span className="text-sm font-semibold text-amber-700">{coins}</span>
           </div>
-          {avatarUrl && (
-            <img src={avatarUrl} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
-          )}
+          
+          <img src={avatarUrl ? avatarUrl : defaultAvatar} alt="Profile" className="h-9 w-9 rounded-full object-cover border-2 border-amber-500" />
+          
         </div>
       </div>
 

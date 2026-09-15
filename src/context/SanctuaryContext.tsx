@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { getProfile } from "../services/sanctuaryService";
 import { useAuth } from "./AuthContext";
-import mockAvatar from '../assets/heize.jpg';
+
+import mockAvatar from "../assets/angry_capybara_working.jpg"
 
 interface SanctuaryState {
   name: string;
@@ -50,7 +51,7 @@ export function SanctuaryProvider({ children }: { children: ReactNode }) {
         setState({
             name: profile.displayName,
             subtitle: STATIC_SUBTITLE,
-            avatarUrl: "../assets/heize.jpg",
+            avatarUrl: undefined,
             level: profile.currentLevel.level,
             exp: profile.currentExp,
             maxExp: profile.currentLevel.threshold,
