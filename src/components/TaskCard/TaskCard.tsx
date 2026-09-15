@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import type { TaskCardData } from "../../types/TaskCardData";
+import type { TaskDto } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
 import ExpandedTaskCard from "./ExpandedTaskCard";
 import CollapsedTaskCard from "./CollapsedTaskCard";
 
 interface TaskCardProps {
-  task: TaskCardData;
+  task: TaskDto;
   isAnyTaskActive: boolean;
   isForcedExpanded: boolean; // true for the first task in the list
   hasEarnedStartXp: boolean; // true once this task's one-time +15 XP has been claimed

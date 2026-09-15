@@ -1,12 +1,12 @@
 import { CheckCircle2, Circle, ListChecks, ChevronUp, Sparkles } from "lucide-react";
-import type { TaskCardData } from "../../types/TaskCardData";
+import type { TaskDto } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
 import { formatDueDateTime } from "../../utils/taskFormatter";
 
 const START_TASK_XP = 15;
 
 interface ExpandedTaskCardProps {
-  task: TaskCardData;
+  task: TaskDto;
   isAnyTaskActive: boolean;
   isCollapsible: boolean;
   hasEarnedStartXp: boolean;
@@ -100,11 +100,11 @@ function ExpandedTaskCard({
                   <Circle className="h-4 w-4 shrink-0 text-gray-300" />
                 )}
                 <span className={`text-sm ${sub.isCompleted ? "text-gray-400 line-through" : "text-gray-700"}`}>
-                  {sub.title}
+                  {sub.content}
                 </span>
               </div>
               <span className={`text-xs ${sub.isCompleted ? "text-gray-400" : "text-gray-500"}`}>
-                {sub.isCompleted ? `✓ +${sub.expGain}` : `+${sub.expGain} XP`}
+                {sub.isCompleted ? `✓ +${sub.exp}` : `+${sub.exp} XP`}
               </span>
             </button>
           </li>

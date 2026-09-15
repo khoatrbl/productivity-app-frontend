@@ -1,30 +1,51 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { TaskCardData } from "../../types/TaskCardData";
+import type { TaskDto } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
 import TaskCard from "../TaskCard/TaskCard";
 import SwipeToDelete from "../SwipeToDelete/SwipeToDelete";
 import { useSanctuary } from "../../context/SanctuaryContext";
+import { getTasks } from "../../services/taskServices";
+import CollapsedTaskCardSkeleton from "../TaskCard/CollapsedTaskCardSkeleton";
 
 const START_TASK_XP = 15;
 
-interface TaskBoardProps {
-  initialTasks: TaskCardData[];
-}
-
-function TaskBoard({ initialTasks }: TaskBoardProps) {
-  const [tasks, setTasks] = useState(initialTasks);
+function TaskBoard() {
+  const [tasks, setTasks] = useState<TaskDto[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   // Tracks which tasks have already paid out the one-time start bonus,
   // so pause -> restart can't be farmed for repeat +15 XP.
   const [startedTaskIds, setStartedTaskIds] = useState<Set<string>>(new Set());
   const { addExp } = useSanctuary();
   const isAnyTaskActive = tasks.some((t) => t.status === TaskStatus.IN_PROGRESS);
 
-  function updateStatus(id: string, status: TaskCardData["status"]) {
+  useEffect(() => {
+    getTasks()
+    .then((data) => {setTasks(data); console.log(data)})
+    .catch((err) => {setError(err.message ?? "Failed to load tasks.")})
+    .finally(() => {setIsLoading(false)})
+  })
+
+  if (isLoading) {
+    return (
+      <div className = "flex flex-col gap-3">
+        {Array.from({length: 6}, (_, index) => (
+          <CollapsedTaskCardSkeleton key={index}/>
+        ))}
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div>{error}</div>
+  }
+
+  function updateStatus(id: string, status: TaskDto["status"]) {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
   }
 
-  function handleStart(task: TaskCardData) {
+  function handleStart(task: TaskDto) {
     updateStatus(task.id, TaskStatus.IN_PROGRESS);
 
     if (!startedTaskIds.has(task.id)) {
@@ -33,7 +54,7 @@ function TaskBoard({ initialTasks }: TaskBoardProps) {
     }
   }
 
-  function handleFinish(task: TaskCardData) {
+  function handleFinish(task: TaskDto) {
     updateStatus(task.id, TaskStatus.COMPLETE);
     addExp(task.totalExp);
   }

@@ -1,10 +1,10 @@
 import type { TaskPriority } from "./TaskPriority";
 import type { TaskStatus } from "./TaskStatus";
 
-export interface SubTask {
+export interface SubTaskDto {
     id: string,
-    title: string,
-    expGain: number,
+    content: string,
+    exp: number,
     position: number,
     isCompleted: boolean
 }
@@ -14,7 +14,7 @@ export type LocalDate = string;      // Format: "YYYY-MM-DD" (e.g., "2026-09-11"
 export type LocalTime = string;      // Format: "HH:mm:ss"  (e.g., "14:30:00")
 export type LocalDateTime = string; // Format: "YYYY-MM-DDTHH:mm:ss" (e.g., "2026-09-11T14:30:00")
 
-export interface TaskCardData {
+export interface TaskDto {
     id: string,
     title: string,
     description: string,
@@ -24,5 +24,5 @@ export interface TaskCardData {
     dueTime: LocalTime,
     estimateMin: number,
     totalExp: number,
-    subTasks: SubTask[]
+    subTasks: SubTaskDto[]
 }

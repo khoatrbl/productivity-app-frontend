@@ -1,9 +1,9 @@
 import { ChevronRight, ListChecks } from "lucide-react";
-import type { TaskCardData } from "../../types/TaskCardData";
+import type { TaskDto } from "../../types/TaskCardData";
 import { formatDueDateTime } from "../../utils/taskFormatter";
 
 interface CollapsedTaskCardProps {
-  task: TaskCardData;
+  task: TaskDto;
   onExpand: () => void;
 }
 

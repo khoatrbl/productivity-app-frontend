@@ -1,8 +1,8 @@
-import type { TaskCardData } from "../types/TaskCardData";
+import type { TaskDto } from "../types/TaskCardData";
 import { TaskPriority } from "../types/TaskPriority";
 import { TaskStatus } from "../types/TaskStatus";
 
-export const mockTaskCardData : TaskCardData[] = [
+export const mockTaskCardData : TaskDto[] = [
     {
         id: "task-1",
         title: "Clean the house",
