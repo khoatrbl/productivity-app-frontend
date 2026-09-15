@@ -1,10 +1,16 @@
 import { Award, Coins } from "lucide-react";
 import { useSanctuary } from "../../context/SanctuaryContext";
-import appLogo from '../../../public/capydo-logo-512x512.png'
+import appLogo from "../../assets/capydo-logo-512x512.png"
 import { motion, AnimatePresence } from "framer-motion";
+import SanctuaryCardSkeleton from "./SanctuaryCardSkeleton";
 
 function SanctuaryCard() {
-  const { name, subtitle, avatarUrl, level, exp, maxExp, coins, recentGains, clearGain } = useSanctuary();
+  const { name, subtitle, avatarUrl, level, exp, maxExp, coins, recentGains, clearGain, isLoading } = useSanctuary();
+
+  if (isLoading) {
+    return <SanctuaryCardSkeleton/>
+  }
+
   const progress = Math.min((exp / maxExp) * 100, 100);
 
   return (

@@ -12,6 +12,10 @@ export interface AuthResponse {
   expiresIn: number;
 }
 
+export async function validateToken(): Promise<void> {
+  await apiClient.get("/auth/validate"); // throws (via the response interceptor) if invalid
+}
+
 export async function login(email: string, password: string): Promise<AuthResponse> {
   try {
     const { data } = await apiClient.post<AuthResponse>("/auth/login", { email, password });
