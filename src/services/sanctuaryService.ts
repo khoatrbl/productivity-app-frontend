@@ -28,6 +28,6 @@ export async function addCoins(amount: number): Promise<CoinsDto> {
 
         return data;
     } catch (error) {
-        throw toApiError(error);
+        throw toApiError(error);    
     }
 }

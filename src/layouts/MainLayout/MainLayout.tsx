@@ -2,15 +2,14 @@ import { motion, type PanInfo } from "framer-motion";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import BottomNavigation from "../../components/BottomNavigation/BottomNavigation";
 import SanctuaryCard from "../../components/SanctuaryCard/SanctuaryCard";
-// import { mockSanctuary } from "../../data/mockSantuaryProfile";
 import { SanctuaryProvider } from "../../context/SanctuaryContext";
+import { TaskProvider } from "../../context/TaskContext";
 
 const swipeRoutes = ["/", "/sanctuary", "/calendar", "/stats", "/settings"];
 const NAV_SWIPE_THRESHOLD = 60;
 const NAV_SWIPE_VELOCITY = 500;
 
 function MainLayout() {
-    // const sanctuaryProfile = mockSanctuary;
     const navigate = useNavigate();
     const location = useLocation();
     const currentIndex = swipeRoutes.indexOf(location.pathname);
@@ -34,23 +33,25 @@ function MainLayout() {
 
     return (
         <SanctuaryProvider>
-            <div className="main-layout min-h-screen">
-                <header className="fixed top-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 bg-[#fcf8f2]">
-                    <SanctuaryCard />
-                </header>
+            <TaskProvider>
+                <div className="main-layout min-h-screen">
+                    <header className="fixed top-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 bg-[#fcf8f2]">
+                        <SanctuaryCard />
+                    </header>
 
-                <motion.main
-                    drag="x"
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0}
-                    onDragEnd={handleDragEnd}
-                    className="page-content pt-[109px] pb-[80px] touch-pan-y"
-                >
-                    <Outlet />
-                </motion.main>
+                    <motion.main
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0}
+                        onDragEnd={handleDragEnd}
+                        className="page-content pt-[109px] pb-[80px] touch-pan-y"
+                    >
+                        <Outlet />
+                    </motion.main>
 
-                <BottomNavigation />
-            </div>
+                    <BottomNavigation />
+                </div>
+            </TaskProvider>
         </SanctuaryProvider>
     );
 }

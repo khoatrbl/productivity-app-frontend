@@ -5,10 +5,13 @@ import defaultAvatar from "../../assets/angry_capybara_working.jpg"
 import { motion, AnimatePresence } from "framer-motion";
 import SanctuaryCardSkeleton from "./SanctuaryCardSkeleton";
 import { LevelUpOverlay } from "../LevelUpOverlay/LevelUpOverlay";
+import { useTasks } from "../../context/TaskContext";
 
 function SanctuaryCard() {
   const { name, subtitle, avatarUrl, level, exp, maxExp, coins, 
     recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp, isLoading } = useSanctuary();
+      
+  const { activeTask } = useTasks();
 
   if (isLoading) {
     return <SanctuaryCardSkeleton/>
@@ -37,7 +40,13 @@ function SanctuaryCard() {
             <img src={appLogo} alt="App logo" className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-xl" />
             <div>
               <p className="font-semibold text-gray-900 leading-tight">{name}</p>
-              <p className="text-sm text-gray-400 leading-tight">{subtitle}</p>
+              {activeTask ? (
+                <p className="text-xs font-semibold uppercase tracking-wide text-orange-500 leading-tight">
+                  Focus Mode
+                </p>
+              ) : (
+                <p className="text-sm text-gray-400 leading-tight">{subtitle}</p>
+              )}
             </div>
           </div>
 
