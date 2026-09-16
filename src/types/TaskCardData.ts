@@ -3,6 +3,7 @@ import type { TaskStatus } from "./TaskStatus";
 
 export interface SubTaskDto {
     id: string,
+    parentId: string,
     content: string,
     exp: number,
     position: number,
@@ -15,7 +16,7 @@ export type LocalTime = string;      // Format: "HH:mm:ss"  (e.g., "14:30:00")
 export type LocalDateTime = string; // Format: "YYYY-MM-DDTHH:mm:ss" (e.g., "2026-09-11T14:30:00")
 
 export interface TaskDto {
-    id: string,
+    taskId: string,
     title: string,
     description: string,
     priority: TaskPriority,
@@ -24,5 +25,6 @@ export interface TaskDto {
     dueTime: LocalTime,
     estimateMin: number,
     totalExp: number,
+    totalCoins: number,
     subTasks: SubTaskDto[]
 }

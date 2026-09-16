@@ -4,7 +4,7 @@ import { TaskStatus } from "../types/TaskStatus";
 
 export const mockTaskCardData : TaskDto[] = [
     {
-        id: "task-1",
+        taskId: "task-1",
         title: "Clean the house",
         description: "Full house cleaning before guests arrive.",
         priority: TaskPriority.URGENT,
@@ -33,7 +33,7 @@ export const mockTaskCardData : TaskDto[] = [
     },
 
      {
-        id: "task-2",
+        taskId: "task-2",
         title: "Clean the room",
         description: "",
         priority: TaskPriority.HIGH,

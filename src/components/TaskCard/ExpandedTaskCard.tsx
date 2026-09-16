@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, ListChecks, ChevronUp, Sparkles } from "lucide-react";
+import { CheckCircle2, Circle, ListChecks, ChevronUp, Sparkles, Coins, Clock, CalendarDays } from "lucide-react";
 import type { TaskDto } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
 import { formatDueDateTime } from "../../utils/taskFormatter";
@@ -31,6 +31,7 @@ function ExpandedTaskCard({
   const completedCount = task.subTasks.filter((s) => s.isCompleted).length;
   const isInProgress = task.status === TaskStatus.IN_PROGRESS;
   const isComplete = task.status === TaskStatus.COMPLETE;
+  const hasSubtasks = task.subTasks.length > 0;
 
   return (
     <div className="rounded-3xl border border-orange-200 bg-white p-5 shadow-sm">
@@ -45,71 +46,83 @@ function ExpandedTaskCard({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-            <Sparkles className="h-3 w-3" />
-            {task.totalExp} XP
-          </div>
-          <div className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-500">
-            Est. {task.estimateMin} min
-          </div>
-          {isCollapsible && (
-            <button
-              onClick={onCollapse}
-              aria-label="Collapse task"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-            >
-              <ChevronUp className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        {isCollapsible && (
+          <button
+            onClick={onCollapse}
+            aria-label="Collapse task"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          >
+            <ChevronUp className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
-      <div className="flex justify-between items-center">
-        <h3 className="mt-3 text-xl font-semibold leading-snug text-gray-900">{task.title}</h3>
-        <span className="mt-3 text-red-500 text-xs font-medium">{formatDueDateTime(task.dueDate, task.dueTime)}</span>
-      </div>
-      
+      <h3 className="mt-2 text-xl font-semibold leading-snug text-gray-900">{task.title}</h3>
       <p className="mt-1 text-sm text-gray-500">{task.description}</p>
 
-      <div className="my-4 border-t border-gray-200" />
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-          <ListChecks className="h-4 w-4" />
-          Micro-Steps ({completedCount}/{task.subTasks.length})
-        </div>
-      
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-400">
+        <span className="flex items-center gap-1">
+          <Clock className="h-3.5 w-3.5" />
+          Est. {task.estimateMin} min
+        </span>
+        <span className="flex items-center gap-1 text-red-500">
+          <CalendarDays className="h-3.5 w-3.5" />
+          {formatDueDateTime(task.dueDate, task.dueTime)}
+        </span>
+        <span className="flex items-center gap-1 text-emerald-600">
+          <Sparkles className="h-3.5 w-3.5" />
+          {task.totalExp} XP
+        </span>
+        <span className="flex items-center gap-1 text-amber-600">
+          <Coins className="h-3.5 w-3.5" />
+          {task.totalCoins}
+        </span>
       </div>
 
-      <ul className="mt-3 space-y-2">
-        {task.subTasks.map((sub, index) => (
-          <li key={index}>
-            <button
-              type="button"
-              onClick={() => onToggleSubtask(index)}
-              disabled={isComplete}
-              className={`flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-left transition-colors ${
-                sub.isCompleted ? "bg-emerald-50" : "bg-gray-50 hover:bg-gray-100"
-              } disabled:cursor-not-allowed`}
-            >
-              <div className="flex items-center gap-2">
-                {sub.isCompleted ? (
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                ) : (
-                  <Circle className="h-4 w-4 shrink-0 text-gray-300" />
-                )}
-                <span className={`text-sm ${sub.isCompleted ? "text-gray-400 line-through" : "text-gray-700"}`}>
-                  {sub.content}
-                </span>
-              </div>
-              <span className={`text-xs ${sub.isCompleted ? "text-gray-400" : "text-gray-500"}`}>
-                {sub.isCompleted ? `✓ +${sub.exp}` : `+${sub.exp} XP`}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      {hasSubtasks && (
+        <>
+          <div className="my-4 border-t border-gray-100" />
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+              <ListChecks className="h-4 w-4" />
+              Micro-Steps ({completedCount}/{task.subTasks.length})
+            </div>
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+              +10 XP each
+            </span>
+          </div>
+
+          <ul className="mt-3 space-y-2">
+            {task.subTasks.map((sub, index) => (
+              <li key={index}>
+                <button
+                  type="button"
+                  onClick={() => onToggleSubtask(index)}
+                  disabled={!isInProgress}
+                  className={`flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-left transition-colors ${
+                    sub.isCompleted ? "bg-emerald-50" : "bg-gray-50 hover:bg-gray-100"
+                  } disabled:cursor-not-allowed disabled:hover:bg-gray-50`}
+                >
+                  <div className="flex items-center gap-2">
+                    {sub.isCompleted ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                    ) : (
+                      <Circle className="h-4 w-4 shrink-0 text-gray-300" />
+                    )}
+                    <span className={`text-sm ${sub.isCompleted ? "text-gray-400 line-through" : "text-gray-700"}`}>
+                      {sub.content}
+                    </span>
+                  </div>
+                  <span className={`text-xs ${sub.isCompleted ? "text-gray-400" : "text-gray-500"}`}>
+                    {sub.isCompleted ? `✓ +${sub.exp}` : `+${sub.exp} XP`}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <div className="mt-5">
         {task.status === TaskStatus.INCOMPLETE && (

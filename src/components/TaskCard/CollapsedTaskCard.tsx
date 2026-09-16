@@ -1,4 +1,4 @@
-import { ChevronRight, ListChecks } from "lucide-react";
+import { ChevronRight, Coins, ListChecks, Sparkles } from "lucide-react";
 import type { TaskDto } from "../../types/TaskCardData";
 import { formatDueDateTime } from "../../utils/taskFormatter";
 
@@ -19,9 +19,19 @@ function CollapsedTaskCard({ task, onExpand }: CollapsedTaskCardProps) {
         <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-400">
           <span>{task.estimateMin}m</span>
           <span className="text-red-500">{formatDueDateTime(task.dueDate, task.dueTime)}</span>
+          {task.subTasks.length > 0 && (
+            <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
+              <ListChecks className="h-3 w-3" />
+              {task.subTasks.length} steps
+            </span>
+          )}
           <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
-            <ListChecks className="h-3 w-3" />
-            {task.subTasks.length} steps
+            <Sparkles className="h-3 w-3" />
+            {task.totalExp} XP
+          </span>
+          <span className="flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">
+            <Coins className="h-3 w-3" />
+            {task.totalCoins}
           </span>
         </div>
       </div>
