@@ -153,7 +153,7 @@ function Auth() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="What should we call you?"
-                  className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-300"
+                  className="w-full bg-transparent text-base text-gray-700 outline-none placeholder:text-gray-300"
                 />
               </div>
             </div>
@@ -171,7 +171,7 @@ function Auth() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. cozycapy@gmail.com"
-                className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-300"
+                className="w-full bg-transparent text-base text-gray-700 outline-none placeholder:text-gray-300"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@ function Auth() {
                 <select
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
-                  className="w-full bg-transparent text-sm text-gray-700 outline-none"
+                  className="w-full bg-transparent text-base text-gray-700 outline-none"
                 >
                   {/* Ensure the detected value is always selectable even if it's
                       somehow missing from the options list */}
@@ -231,7 +231,7 @@ function Auth() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Keep it cozy & memorable"
-                className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-300"
+                className="w-full bg-transparent text-base text-gray-700 outline-none placeholder:text-gray-300"
               />
               <button type="button" onClick={() => setShowPassword((s) => !s)} className="text-gray-400">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -252,7 +252,7 @@ function Auth() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="One more time, just to be safe"
-                  className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-300"
+                  className="w-full bg-transparent text-base text-gray-700 outline-none placeholder:text-gray-300"
                 />
               </div>
             </div>

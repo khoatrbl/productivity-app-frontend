@@ -13,19 +13,18 @@ function formatClock(totalSeconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function FocusTimer({ task }: { task: TaskDto }) {
+function FocusTimer({ task, startedAt }: { task: TaskDto; startedAt: number }) {
   const totalSeconds = task.estimateMin * 60;
-  const [elapsed, setElapsed] = useState(0);
+  // No local elapsed state anymore — just a re-render pulse every second.
+  // The actual elapsed value is always derived fresh from the real clock.
+  const [, forceTick] = useState(0);
 
   useEffect(() => {
-    setElapsed(0);
-  }, [task.taskId]);
-
-  useEffect(() => {
-    const interval = setInterval(() => setElapsed((e) => e + 1), 1000);
+    const interval = setInterval(() => forceTick((n) => n + 1), 1000);
     return () => clearInterval(interval);
   }, [task.taskId]);
 
+  const elapsed = Math.floor((Date.now() - startedAt) / 1000);
   const remaining = totalSeconds - elapsed;
   const isOvertime = remaining <= 0;
   const progress = Math.min(elapsed / totalSeconds, 1);
@@ -102,7 +101,7 @@ function CurrentStep({ task }: { task: TaskDto }) {
 }
 
 function FocusSession() {
-  const { activeTask, handleFinish, handlePause } = useTasks();
+  const { activeTask, handleFinish, handlePause, getStartedAt } = useTasks();
 
   if (!activeTask) {
     return (
@@ -132,7 +131,7 @@ function FocusSession() {
       </div>
 
       <CurrentStep task={activeTask} />
-      <FocusTimer task={activeTask} />
+      <FocusTimer task={activeTask} startedAt={getStartedAt(activeTask.taskId) ?? Date.now()} />
 
       <button
         onClick={() => handleFinish(activeTask)}

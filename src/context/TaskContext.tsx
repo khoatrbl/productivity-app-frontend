@@ -7,13 +7,14 @@ import { useSanctuary } from "./SanctuaryContext";
 const START_TASK_XP = 15;
 
 interface TaskContextValue {
-  tasks: TaskDto[]; // full list, including completed — kept for a future archive view
-  visibleTasks: TaskDto[]; // excludes completed — what List View should render
+  tasks: TaskDto[];
+  visibleTasks: TaskDto[];
   activeTask: TaskDto | null;
   isLoading: boolean;
   error: string | null;
   isAnyTaskActive: boolean;
   hasEarnedStartXp: (taskId: string) => boolean;
+  getStartedAt: (taskId: string) => number | undefined; // NEW
   handleStart: (task: TaskDto) => Promise<void>;
   handlePause: (task: TaskDto) => Promise<void>;
   handleFinish: (task: TaskDto) => Promise<void>;
@@ -28,6 +29,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [startedTaskIds, setStartedTaskIds] = useState<Set<string>>(new Set());
+  const [taskStartTimes, setTaskStartTimes] = useState<Record<string, number>>({});
   const { addExp, addCoins } = useSanctuary();
 
   useEffect(() => {
@@ -36,6 +38,24 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       .catch((err) => setError(err.message ?? "Failed to load tasks."))
       .finally(() => setIsLoading(false));
   }, []);
+
+  // Backfill a start time for any task that's already IN_PROGRESS when we
+  // first see it (e.g. a page refresh mid-task) but only ONCE per task —
+  // this must never overwrite an existing timestamp on a later tasks update,
+  // or every unrelated state change (like toggling a subtask) would reset it.
+  useEffect(() => {
+    setTaskStartTimes((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      tasks.forEach((t) => {
+        if (t.status === TaskStatus.IN_PROGRESS && !(t.taskId in next)) {
+          next[t.taskId] = Date.now();
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [tasks]);
 
   const isAnyTaskActive = tasks.some((t) => t.status === TaskStatus.IN_PROGRESS);
   const visibleTasks = tasks.filter((t) => t.status !== TaskStatus.COMPLETE);
@@ -55,6 +75,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     try {
       const updated = await updateStatus(task.taskId, TaskStatus.IN_PROGRESS);
       if (!updated) return;
+
+      // Fresh timer every time a task is (re)started — consistent with pause
+      // fully releasing the active slot rather than truly "resuming."
+      setTaskStartTimes((prev) => ({ ...prev, [task.taskId]: Date.now() }));
 
       if (!startedTaskIds.has(task.taskId)) {
         await addExp(START_TASK_XP);
@@ -110,6 +134,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         error,
         isAnyTaskActive,
         hasEarnedStartXp: (taskId) => startedTaskIds.has(taskId),
+        getStartedAt: (taskId) => taskStartTimes[taskId], // NEW
         handleStart,
         handlePause,
         handleFinish,
