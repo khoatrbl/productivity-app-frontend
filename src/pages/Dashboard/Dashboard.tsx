@@ -39,7 +39,7 @@ function Dashboard() {
             <div className="px-2">
                 {phase === "card" && <QuoteCardInline quote={quote} />}
 
-                <div className="mb-3 flex justify-center">
+                <div className="mb-2 flex justify-center">
                     <ViewToggle value={view} onChange={setView} />
                 </div>
 

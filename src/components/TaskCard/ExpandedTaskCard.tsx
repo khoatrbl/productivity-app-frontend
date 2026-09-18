@@ -2,6 +2,7 @@ import { CheckCircle2, Circle, ListChecks, ChevronUp, Sparkles, Coins, Clock, Ca
 import type { TaskDto } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
 import { formatDueDateTime } from "../../utils/taskFormatter";
+import PriorityBadge from "../PriorityBadge/PriorityBadge";
 
 const START_TASK_XP = 15;
 
@@ -46,15 +47,19 @@ function ExpandedTaskCard({
           )}
         </div>
 
-        {isCollapsible && (
-          <button
-            onClick={onCollapse}
-            aria-label="Collapse task"
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-          >
-            <ChevronUp className="h-4 w-4" />
-          </button>
-        )}
+        <div className="inline-flex justify-around gap-1">
+          <PriorityBadge priority={task.priority} />
+
+          {isCollapsible && (
+            <button
+              onClick={onCollapse}
+              aria-label="Collapse task"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            >
+              <ChevronUp className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <h3 className="mt-2 text-xl font-semibold leading-snug text-gray-900">{task.title}</h3>
@@ -88,9 +93,9 @@ function ExpandedTaskCard({
               <ListChecks className="h-4 w-4" />
               Micro-Steps ({completedCount}/{task.subTasks.length})
             </div>
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+            {/* <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
               +10 XP each
-            </span>
+            </span> */}
           </div>
 
           <ul className="mt-3 space-y-2">
