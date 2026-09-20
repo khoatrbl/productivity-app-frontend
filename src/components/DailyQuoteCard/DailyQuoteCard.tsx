@@ -57,7 +57,7 @@ export function QuoteIntroOverlay({ data, duration = 5000, onDismiss }: QuoteInt
         </p>
 
         <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-          +{data.calmXp} Calm XP
+          +{data.calmExp} Calm XP
         </span>
 
         <div className="mt-1 h-1 w-full max-w-[180px] overflow-hidden rounded-full bg-orange-200">
@@ -130,7 +130,7 @@ export function QuoteCardInline({ data }: { data: DailyQuoteData }) {
                   {data.author}
                 </p>
                 <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                  +{data.calmXp} Calm XP
+                  +{data.calmExp} Calm XP
                 </span>
               </div>
             </div>

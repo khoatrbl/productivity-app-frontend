@@ -1,4 +1,5 @@
 import { Award, Coins } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useSanctuary } from "../../context/SanctuaryContext";
 import appLogo from "../../assets/capydo-logo-512x512.png"
 import defaultAvatar from "../../assets/angry_capybara_working.jpg"
@@ -12,6 +13,8 @@ function SanctuaryCard() {
     recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp, isLoading } = useSanctuary();
       
   const { activeTask } = useTasks();
+  const navigate = useNavigate();
+  
 
   if (isLoading) {
     return <SanctuaryCardSkeleton/>
@@ -51,7 +54,6 @@ function SanctuaryCard() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* NEW: relative wrapper so the floating label anchors to this badge specifically */}
             <div className="relative flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1">
               <Coins className="h-4 w-4 text-amber-500" />
               <span className="text-sm font-semibold text-amber-700">{coins}</span>
@@ -72,9 +74,14 @@ function SanctuaryCard() {
                 ))}
               </AnimatePresence>
             </div>
-            
-            <img src={avatarUrl ? avatarUrl : defaultAvatar} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
-            
+
+            <button
+              onClick={() => navigate("/settings")}
+              aria-label="Open settings"
+              className="h-9 w-9 shrink-0 overflow-hidden rounded-full"
+            >
+              <img src={avatarUrl ? avatarUrl : defaultAvatar} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
+            </button>
           </div>
         </div>
 

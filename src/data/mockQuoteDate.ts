@@ -6,19 +6,15 @@ const dailyQuotes: DailyQuoteData[] = [
     title: "Gentle pacing today",
     quote: "One small step is still moving forward. Be gentle with your spark today. Even 2% progress counts.",
     author: "Capy Zen Master",
-    calmXp: 10,
+    calmExp: 10,
   },
   {
     label: "Mindful Pulse",
     title: "Rest is productive too",
     quote: "Rest is part of the process, not the opposite of it. Let your spark recharge without guilt.",
     author: "Capy Zen Master",
-    calmXp: 10,
+    calmExp: 10,
   },
   // add more entries freely — rotation just cycles through the array
 ];
 
-export function getDailyQuote(): DailyQuoteData {
-  const dayIndex = Math.floor(Date.now() / 86_400_000);
-  return dailyQuotes[dayIndex % dailyQuotes.length];
-}
