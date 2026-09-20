@@ -6,12 +6,14 @@ import TaskBoard from "../../components/TaskBoard/TaskBoard";
 import FocusSession from "../../components/FocusSession/FocusSession";
 import ViewToggle, { type DashboardView } from "../../components/ViewToggle/ViewToggle";
 import { useTasks } from "../../context/TaskContext";
+import { useSanctuary } from "../../context/SanctuaryContext";
 
 function Dashboard() {
     const [showIntro] = useState(() => sessionStorage.getItem("justLoggedIn") === "true");
     const [phase, setPhase] = useState<"intro" | "card">(showIntro ? "intro" : "card");
     const [view, setView] = useState<DashboardView>("list");
     const { activeTask } = useTasks();
+    const { addExp } = useSanctuary();
     const quote = getDailyQuote();
 
     useEffect(() => {
@@ -20,33 +22,34 @@ function Dashboard() {
         }
     }, [showIntro]);
 
-    // Nudges into Focus view whenever a task starts/stops being active —
-    // still freely overridable via the toggle afterward. Assumption worth
-    // confirming: is this auto-switch wanted, or should the view always
-    // stay exactly where the user last left it?
     useEffect(() => {
         setView(activeTask ? "focus" : "list");
     }, [!!activeTask]);
 
+    function handleQuoteDismiss() {
+        setPhase("card");
+        addExp(quote.calmXp);
+    }
+
     return (
-        <>
-            <AnimatePresence mode="popLayout">
-                {phase === "intro" && (
-                    <QuoteIntroOverlay quote={quote} onDismiss={() => setPhase("card")} />
-                )}
-            </AnimatePresence>
+    <>
+        <AnimatePresence mode="popLayout">
+            {phase === "intro" && (
+                <QuoteIntroOverlay data={quote} onDismiss={handleQuoteDismiss} />
+            )}
+        </AnimatePresence>
 
-            <div className="px-2">
-                {phase === "card" && <QuoteCardInline quote={quote} />}
+        <div className="flex flex-col gap-2 px-2">
+            {phase === "card" && <QuoteCardInline data={quote} />}
 
-                <div className="mb-2 flex justify-center">
-                    <ViewToggle value={view} onChange={setView} />
-                </div>
-
-                {view === "focus" ? <FocusSession /> : <TaskBoard />}
+            <div className="flex justify-center">
+                <ViewToggle value={view} onChange={setView} />
             </div>
-        </>
-    );
+
+            {view === "focus" ? <FocusSession /> : <TaskBoard />}
+        </div>
+    </>
+);
 }
 
 export default Dashboard;
