@@ -44,7 +44,8 @@ function MainLayout() {
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0}
                         onDragEnd={handleDragEnd}
-                        className="page-content pt-[109px] pb-[80px] touch-pan-y"
+                        className="page-content pt-[109px] touch-pan-y"
+                        style={{ paddingBottom: "calc(var(--bottom-nav-height) + 1.5rem)" }}
                     >
                         <Outlet />
                     </motion.main>
