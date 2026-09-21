@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { Timer, PawPrint, Calendar, Award, Plus, type LucideIcon } from "lucide-react";
+import { BOTTOM_NAV_SAFE_AREA } from "../../constants/layout";
 
 interface BottomNavigationProps {
   onAddTask?: () => void;
@@ -52,10 +53,7 @@ function BottomNavigation({ onAddTask }: BottomNavigationProps) {
   }
 
   return (
-    <nav
-      style={{ "--bottom-nav-height": "calc(4rem + max(0.5rem, env(safe-area-inset-bottom)))" } as React.CSSProperties}
-      className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2"
-    >
+    <nav className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2">
       <div className="relative h-16">
         {/* Wave-shaped bar with a notch cut out for the floating button.
             Hand-tuned bezier curve — nudge the control points below if the
@@ -95,7 +93,7 @@ function BottomNavigation({ onAddTask }: BottomNavigationProps) {
 
       {/* Flat continuation of the bar's color into the safe-area inset,
           so the green doesn't visibly stop short of the home indicator. */}
-      <div className="bg-[#065f46] pb-[max(0.5rem,env(safe-area-inset-bottom))]" />
+      <div className="bg-[#065f46]" style={{ paddingBottom: BOTTOM_NAV_SAFE_AREA }} />
     </nav>
   );
 }

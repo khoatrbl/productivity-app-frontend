@@ -126,7 +126,7 @@ function FocusSession() {
           {activeTask.priority}
         </span>
         <span className="rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-500">
-          {activeTask.estimateMin}m Sprint
+          {activeTask.sprintInMinutes}m Sprint
         </span>
       </div>
 

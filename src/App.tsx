@@ -8,6 +8,7 @@ import Calendar from "./pages/Calendar/Calendar";
 import Auth from "./pages/Auth/Auth";
 import RequireAuth from "./components/RequireAuth/RequireAuth";
 import { AuthProvider } from "./context/AuthContext";
+import CreateTask from "./pages/CreateTask/CreateTask";
 
 function App() {
     return (
@@ -27,6 +28,7 @@ function App() {
               <Route path="/calendar" element={<Calendar/>}/>
               <Route path="/stats" element={<Stats/>}/>
               <Route path="/settings" element={<Settings/>}/>
+              <Route path="/create-task" element={<CreateTask/>}/>
             </Route>
           </Routes>
         </div>

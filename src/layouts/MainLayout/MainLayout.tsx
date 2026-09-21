@@ -4,6 +4,7 @@ import BottomNavigation from "../../components/BottomNavigation/BottomNavigation
 import SanctuaryCard from "../../components/SanctuaryCard/SanctuaryCard";
 import { SanctuaryProvider } from "../../context/SanctuaryContext";
 import { TaskProvider } from "../../context/TaskContext";
+import { BOTTOM_NAV_TOTAL_HEIGHT } from "../../constants/layout";
 
 const swipeRoutes = ["/", "/sanctuary", "/calendar", "/stats", "/settings"];
 const NAV_SWIPE_THRESHOLD = 60;
@@ -45,7 +46,7 @@ function MainLayout() {
                         dragElastic={0}
                         onDragEnd={handleDragEnd}
                         className="page-content pt-[109px] touch-pan-y"
-                        style={{ paddingBottom: "calc(var(--bottom-nav-height) + 1.5rem)" }}
+                        style={{ paddingBottom: `calc(${BOTTOM_NAV_TOTAL_HEIGHT} + 1.5rem)` }}
                     >
                         <Outlet />
                     </motion.main>
