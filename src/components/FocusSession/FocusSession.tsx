@@ -14,7 +14,7 @@ function formatClock(totalSeconds: number): string {
 }
 
 function FocusTimer({ task, startedAt }: { task: TaskDto; startedAt: number }) {
-  const totalSeconds = task.estimateMin * 60;
+  const totalSeconds = task.sprintInMinutes * 60;
   // No local elapsed state anymore — just a re-render pulse every second.
   // The actual elapsed value is always derived fresh from the real clock.
   const [, forceTick] = useState(0);
@@ -86,7 +86,7 @@ function CurrentStep({ task }: { task: TaskDto }) {
       >
         {currentSub.content}
       </button>
-
+      
       {hasNext && (
         <button
           onClick={() => setPointer((p) => p + 1)}

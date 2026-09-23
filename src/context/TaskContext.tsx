@@ -14,7 +14,7 @@ interface TaskContextValue {
   error: string | null;
   isAnyTaskActive: boolean;
   hasEarnedStartXp: (taskId: string) => boolean;
-  getStartedAt: (taskId: string) => number | undefined; // NEW
+  getStartedAt: (taskId: string) => number | undefined;
   handleStart: (task: TaskDto) => Promise<void>;
   handlePause: (task: TaskDto) => Promise<void>;
   handleFinish: (task: TaskDto) => Promise<void>;

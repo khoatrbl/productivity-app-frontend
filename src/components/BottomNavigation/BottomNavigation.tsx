@@ -58,9 +58,9 @@ function BottomNavigation({ onAddTask }: BottomNavigationProps) {
         {/* Wave-shaped bar with a notch cut out for the floating button.
             Hand-tuned bezier curve — nudge the control points below if the
             dip doesn't sit exactly where you want it. */}
-        <svg viewBox="0 0 430 64" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+        <svg viewBox="0 0 400 64" preserveAspectRatio="none" className="absolute inset-0 h-full w-full drop-shadow-lg">
           <path
-            d="M0,24 C0,10.7 10.7,0 24,0 L187,0 A28,28 0 0 1 243,0 L406,0 C419.3,0 430,10.7 430,24 L430,64 L0,64 Z"
+            d="M18,0 L164,0 C169,0 170,4 171,7 A30,30 0 0 0 229,7 C230,4 231,0 236,0 L382,0 A18,18 0 0 1 400,18 L400,46 A18,18 0 0 1 382,64 L18,64 A18,18 0 0 1 0,46 L0,18 A18,18 0 0 1 18,0 Z"
             fill="#065f46"
           />
         </svg>
@@ -69,7 +69,7 @@ function BottomNavigation({ onAddTask }: BottomNavigationProps) {
         <button
           onClick={handleAddTask}
           aria-label="Add task"
-          className="absolute left-1/2 -top-5 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#f8ca80] hover:bg-amber-400 text-emerald-900 shadow-lg transition-transform active:scale-95"
+          className="absolute left-1/2 -top-0.5 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#f8ca80] hover:bg-amber-400 text-emerald-900 shadow-lg transition-transform active:scale-95"
         >
           <Plus className="h-7 w-7" strokeWidth={2.5} />
         </button>
