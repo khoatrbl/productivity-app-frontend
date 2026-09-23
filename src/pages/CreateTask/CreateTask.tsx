@@ -11,8 +11,6 @@ import { createTask } from "../../services/taskServices";
 import { useRewardEstimate } from "../../hooks/useRewardEstimate";
 import type { TaskPriority } from "../../types/TaskPriority";
 
-import appLogo from "../../assets/capydo-logo-512x512.png"
-
 function formatLocalDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -118,7 +116,7 @@ function CreateTask() {
         <button onClick={() => navigate(-1)} className="flex-1 rounded-full border border-gray-300 py-3 text-sm font-semibold text-gray-600">
           Cancel
         </button>
-        <button onClick={handleSubmit} disabled={isSubmitting} className="flex-[2] rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white disabled:opacity-60">
+        <button onClick={handleSubmit} disabled={isSubmitting} className="flex-2 rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white disabled:opacity-60">
           {isSubmitting ? "Creating..." : "Create Quest"}
         </button>
       </div>

@@ -69,7 +69,7 @@ function BottomNavigation({ onAddTask }: BottomNavigationProps) {
         <button
           onClick={handleAddTask}
           aria-label="Add task"
-          className="absolute left-1/2 top-0 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#f8ca80] hover:bg-amber-400 text-emerald-900 shadow-lg transition-transform active:scale-95"
+          className="absolute left-1/2 -top-5 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#f8ca80] hover:bg-amber-400 text-emerald-900 shadow-lg transition-transform active:scale-95"
         >
           <Plus className="h-7 w-7" strokeWidth={2.5} />
         </button>

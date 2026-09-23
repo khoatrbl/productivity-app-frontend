@@ -48,3 +48,13 @@ export async function estimateReward(params: {
     throw toApiError(err);
   }
 }
+
+export async function deleteTask(taskId: string) {
+  try {
+    const {data} = await apiClient.delete(`/tasks/${taskId}`);
+
+    return data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}

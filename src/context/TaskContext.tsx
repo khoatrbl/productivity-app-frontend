@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { TaskDto } from "../types/TaskCardData";
 import { TaskStatus } from "../types/TaskStatus";
-import { getTasks, updateTaskStatus } from "../services/taskServices";
+import { deleteTask, getTasks, updateTaskStatus } from "../services/taskServices";
 import { useSanctuary } from "./SanctuaryContext";
 
 const START_TASK_XP = 15;
@@ -120,8 +120,15 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  function handleDelete(taskId: string) {
+  async function handleDelete(taskId: string) {
     setTasks((prev) => prev.filter((t) => t.taskId !== taskId));
+
+    try {
+      await deleteTask(taskId)
+    } catch (err) {
+      console.error("Failed to delete task: ", err);
+    }
+    
   }
 
   return (
