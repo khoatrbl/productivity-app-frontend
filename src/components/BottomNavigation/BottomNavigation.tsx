@@ -60,7 +60,20 @@ function BottomNavigation({ onAddTask }: BottomNavigationProps) {
             dip doesn't sit exactly where you want it. */}
         <svg viewBox="0 0 400 64" preserveAspectRatio="none" className="absolute inset-0 h-full w-full drop-shadow-lg">
           <path
-            d="M18,0 L164,0 C169,0 170,4 171,7 A30,30 0 0 0 229,7 C230,4 231,0 236,0 L382,0 A18,18 0 0 1 400,18 L400,46 A18,18 0 0 1 382,64 L18,64 A18,18 0 0 1 0,46 L0,18 A18,18 0 0 1 18,0 Z"
+            d="
+              M18,0
+              L164,0
+              C169,0 170,4 171,7
+              A30,30 0 0 0 229,7
+              C230,4 231,0 236,0
+              L382,0
+              A18,18 0 0 1 400,18
+              L400,64
+              L0,64
+              L0,18
+              A18,18 0 0 1 18,0
+              Z
+            "
             fill="#065f46"
           />
         </svg>

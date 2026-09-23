@@ -40,7 +40,7 @@ function CreateTask() {
     try {
       await createTask({
         title: title.trim(),
-        description: description.trim() || undefined,
+        description: description.trim() || "",
         dueDate: formatLocalDate(dueDate),
         dueTime: `${String(hour24).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`,
         priority,
