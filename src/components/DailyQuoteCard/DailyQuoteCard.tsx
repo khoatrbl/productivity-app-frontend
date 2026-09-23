@@ -56,9 +56,15 @@ export function QuoteIntroOverlay({ data, duration = 5000, onDismiss }: QuoteInt
           {data.author}
         </p>
 
-        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-          +{data.calmExp} Calm XP
-        </span>
+        {data.alreadyClaimed ? (
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">
+            Already claimed today.
+          </span>
+        ) : (
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+            +{data.calmExp} Calm EXP
+          </span>
+        )}
 
         <div className="mt-1 h-1 w-full max-w-[180px] overflow-hidden rounded-full bg-orange-200">
           <motion.div
@@ -73,7 +79,7 @@ export function QuoteIntroOverlay({ data, duration = 5000, onDismiss }: QuoteInt
           onClick={onDismiss}
           className="rounded-full border border-orange-400 px-4 py-1.5 text-xs font-medium text-orange-500 transition-colors duration-200 hover:bg-orange-400 hover:text-white"
         >
-          Claim Reward!
+          {data.alreadyClaimed ? "Continue" : "Claim Reward"}
         </button>
       </motion.div>
     </>,

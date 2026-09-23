@@ -14,7 +14,7 @@ function Dashboard() {
     const [phase, setPhase] = useState<"intro" | "card">(showIntro ? "intro" : "card");
     const [view, setView] = useState<DashboardView>("list");
     const { activeTask } = useTasks();
-    const { addExp } = useSanctuary();
+    const { addExp, claimQuoteReward } = useSanctuary();
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
 
     useEffect(() => {
@@ -31,15 +31,12 @@ function Dashboard() {
         getDailyQuote().then(setQuote).catch((err) => console.error("Failed to load daily quote:", err));
     }, []);
 
-    function handleQuoteDismiss() {
+    async function handleQuoteDismiss() {
         setPhase("card");
-
         if (quote) {
-            addExp(quote.calmExp);
-        } else {
-            console.warn("Quote is dismissed before it is loaded. No calm EXP is granted.")
-        }
+            await claimQuoteReward(); // backend decides if this actually grants anything
     }
+}
 
     return (
     <>

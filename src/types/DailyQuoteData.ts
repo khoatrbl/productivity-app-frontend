@@ -4,4 +4,5 @@ export interface DailyQuoteData {
   quote: string;   // full quote text, shown only when expanded
   author: string;  // e.g. "Capy Zen Master"
   calmExp: number;  // e.g. 10
+  alreadyClaimed: boolean; 
 }

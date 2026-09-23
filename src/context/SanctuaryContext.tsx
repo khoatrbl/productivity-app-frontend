@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { getProfile, addExp as addExpBackend, addCoins as addCoinsBackend } from "../services/sanctuaryService";
 import { useAuth } from "./AuthContext";
+import { claimDailyQuote } from "../services/quoteServices";
 
 interface SanctuaryState {
   name: string;
@@ -38,6 +39,7 @@ interface SanctuaryContextValue extends SanctuaryState {
   clearCoinGain: (id: string) => void; 
   levelUpEvents: LevelUpEvent[];
   clearLevelUp: (id: string) => void;
+  claimQuoteReward: () => Promise<boolean>; // returns whether XP was actually granted
 }
 
 const SanctuaryContext = createContext<SanctuaryContextValue | null>(null);
@@ -130,9 +132,26 @@ export function SanctuaryProvider({ children }: { children: ReactNode }) {
     setLevelUpEvents((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
+  const claimQuoteReward = useCallback(async (): Promise<boolean> => {
+    const { claimed, expGranted, profile } = await claimDailyQuote();
+
+    if (claimed) {
+      setState((prev) => ({
+        ...prev,
+        exp: profile.currentExp,
+        level: profile.currentLevel.level,
+        maxExp: profile.currentLevel.threshold,
+        coins: profile.coins,
+      }));
+      setRecentGains((prev) => [...prev, { id: crypto.randomUUID(), amount: expGranted }]); 
+    }
+
+    return claimed;
+  }, []);
+
   return (
     <SanctuaryContext.Provider
-      value={{ ...state, isLoading, error, addExp, addCoins, recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp }}
+      value={{ ...state, isLoading, error, addExp, addCoins, claimQuoteReward, recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp }}
     >
       {children}
     </SanctuaryContext.Provider>
