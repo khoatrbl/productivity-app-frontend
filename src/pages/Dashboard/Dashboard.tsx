@@ -50,7 +50,7 @@ function Dashboard() {
         </AnimatePresence>
 
         <div className="flex flex-col gap-2 px-2">
-            {phase === "card" && quote && <QuoteCardInline data={quote} />}
+            {phase === "card" && quote && view !== "focus" && <QuoteCardInline data={quote} />}
 
             <div className="flex justify-center">
                 <ViewToggle value={view} onChange={setView} />

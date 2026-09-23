@@ -16,6 +16,7 @@ function App() {
         <div className="app mx-auto min-h-screen w-full max-w-[430px]">
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/tasks/new" element={<RequireAuth><CreateTask /></RequireAuth>} />
             <Route
               element={
                 <RequireAuth>
@@ -28,7 +29,6 @@ function App() {
               <Route path="/calendar" element={<Calendar/>}/>
               <Route path="/stats" element={<Stats/>}/>
               <Route path="/settings" element={<Settings/>}/>
-              <Route path="/create-task" element={<CreateTask/>}/>
             </Route>
           </Routes>
         </div>

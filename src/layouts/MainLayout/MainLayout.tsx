@@ -51,7 +51,7 @@ function MainLayout() {
                         <Outlet />
                     </motion.main>
 
-                    <BottomNavigation />
+                    <BottomNavigation onAddTask={() => navigate("/tasks/new")} />
                 </div>
             </TaskProvider>
         </SanctuaryProvider>
