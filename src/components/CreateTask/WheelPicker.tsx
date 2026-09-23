@@ -48,7 +48,7 @@ function WheelPicker<T extends string | number>({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="h-full snap-y snap-mandatory overflow-y-scroll [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="relative h-full snap-y snap-mandatory overflow-y-scroll [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ paddingTop: paddingY, paddingBottom: paddingY }}
       >
         {items.map((item) => (

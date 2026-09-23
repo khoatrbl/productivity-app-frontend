@@ -14,7 +14,7 @@ function Dashboard() {
     const [phase, setPhase] = useState<"intro" | "card">(showIntro ? "intro" : "card");
     const [view, setView] = useState<DashboardView>("list");
     const { activeTask } = useTasks();
-    const { addExp, claimQuoteReward } = useSanctuary();
+    const { claimQuoteReward } = useSanctuary();
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
 
     useEffect(() => {
@@ -31,32 +31,38 @@ function Dashboard() {
         getDailyQuote().then(setQuote).catch((err) => console.error("Failed to load daily quote:", err));
     }, []);
 
+    
     async function handleQuoteDismiss() {
         setPhase("card");
-        if (quote) {
-            await claimQuoteReward(); // backend decides if this actually grants anything
+        if (!quote) return;
+
+        await claimQuoteReward();
+
+        // Always true after this point, regardless of whether this specific
+        // call granted new XP or was an idempotent no-op — don't use the
+        // claim response's `claimed` flag here, it means something different.
+        setQuote((prev) => (prev ? { ...prev, alreadyClaimed: true } : prev));
     }
-}
 
     return (
-    <>
-        <AnimatePresence mode="popLayout">
-            {phase === "intro" && quote && (
-                <QuoteIntroOverlay data={quote} onDismiss={handleQuoteDismiss} />
-            )}
-        </AnimatePresence>
+        <>
+            <AnimatePresence mode="popLayout">
+                {phase === "intro" && quote && (
+                    <QuoteIntroOverlay data={quote} onDismiss={handleQuoteDismiss} />
+                )}
+            </AnimatePresence>
 
-        <div className="flex flex-col gap-2 px-2">
-            {phase === "card" && quote && view !== "focus" && <QuoteCardInline data={quote} />}
+            <div className="flex flex-col gap-2 px-2">
+                {phase === "card" && quote && view !== "focus" && <QuoteCardInline data={quote} />}
 
-            <div className="flex justify-center">
-                <ViewToggle value={view} onChange={setView} />
+                <div className="flex justify-center">
+                    <ViewToggle value={view} onChange={setView} />
+                </div>
+
+                {view === "focus" ? <FocusSession /> : <TaskBoard />}
             </div>
-
-            {view === "focus" ? <FocusSession /> : <TaskBoard />}
-        </div>
-    </>
-);
+        </>
+    );
 }
 
 export default Dashboard;
