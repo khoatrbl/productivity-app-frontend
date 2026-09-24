@@ -1,10 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { TaskDto } from "../types/TaskCardData";
 import { TaskStatus } from "../types/TaskStatus";
-import { deleteTask, getTasks, updateTaskStatus } from "../services/taskServices";
+import { claimStartExpReward, deleteTask, getTasks, updateTaskStatus } from "../services/taskServices";
 import { useSanctuary } from "./SanctuaryContext";
-
-const START_TASK_XP = 15;
 
 interface TaskContextValue {
   tasks: TaskDto[];
@@ -28,9 +26,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [startedTaskIds, setStartedTaskIds] = useState<Set<string>>(new Set());
   const [taskStartTimes, setTaskStartTimes] = useState<Record<string, number>>({});
-  const { addExp, addCoins } = useSanctuary();
+  const { addExp, addCoins, claimStartTaskReward } = useSanctuary();
 
   useEffect(() => {
     getTasks()
@@ -80,9 +77,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       // fully releasing the active slot rather than truly "resuming."
       setTaskStartTimes((prev) => ({ ...prev, [task.taskId]: Date.now() }));
 
-      if (!startedTaskIds.has(task.taskId)) {
-        await addExp(START_TASK_XP);
-        setStartedTaskIds((prev) => new Set(prev).add(task.taskId));
+      if (updated.startExpClaimed === false) {
+        await claimStartTaskReward(task.taskId);
       }
     } catch (err) {
       console.error("Failed to start task:", err);
@@ -140,7 +136,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         isLoading,
         error,
         isAnyTaskActive,
-        hasEarnedStartXp: (taskId) => startedTaskIds.has(taskId),
+        hasEarnedStartXp: (taskId) => {
+          const task = tasks.find(t => t.taskId === taskId);
+          return task?.startExpClaimed ?? false;
+        },
         getStartedAt: (taskId) => taskStartTimes[taskId], // NEW
         handleStart,
         handlePause,

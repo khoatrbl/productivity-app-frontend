@@ -27,5 +27,6 @@ export interface TaskDto {
     totalExp: number,
     totalCoins: number,
     sprintInMinutes: number,
+    startExpClaimed: boolean,
     subTasks: SubTaskDto[]
 }

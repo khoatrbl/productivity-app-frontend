@@ -1,9 +1,16 @@
 
 import apiClient, { toApiError } from "../lib/apiClient";
 import type { CreateTaskRequest, RewardEstimate } from "../types/CreateTaskRequest";
+import type { ProfileDto } from "../types/SanctuaryProfile";
 import type { TaskDto } from "../types/TaskCardData";
 import type { TaskPriority } from "../types/TaskPriority";
 import type { TaskStatus } from "../types/TaskStatus";
+
+export interface StartExpClaimResult {
+  claimed: boolean,
+  expGranted: number,
+  profile: ProfileDto,
+}
 
 
 export async function getTasks(): Promise<TaskDto[]> {
@@ -49,7 +56,17 @@ export async function estimateReward(params: {
   }
 }
 
-export async function deleteTask(taskId: string) {
+export async function claimStartExpReward(taskId: string) : Promise<StartExpClaimResult> {
+  try {
+    const {data} = await apiClient.post<StartExpClaimResult>(`/tasks/${taskId}/claims`);
+
+    return data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function deleteTask(taskId: string) : Promise<void> {
   try {
     const {data} = await apiClient.delete(`/tasks/${taskId}`);
 
