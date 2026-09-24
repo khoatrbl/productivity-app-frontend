@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { TaskDto } from "../types/TaskCardData";
 import { TaskStatus } from "../types/TaskStatus";
-import { claimStartExpReward, deleteTask, getTasks, updateTaskStatus } from "../services/taskServices";
+import { createTask, deleteTask, getTasks, updateTask, updateTaskStatus } from "../services/taskServices";
 import { useSanctuary } from "./SanctuaryContext";
+import type { UpdateTaskRequest } from "../types/UpdateTaskRequest";
+import type { CreateTaskRequest } from "../types/CreateTaskRequest";
 
 interface TaskContextValue {
   tasks: TaskDto[];
@@ -18,6 +20,8 @@ interface TaskContextValue {
   handleFinish: (task: TaskDto) => Promise<void>;
   toggleSubtask: (taskId: string, subtaskIndex: number) => void;
   handleDelete: (taskId: string) => void;
+  handleUpdate: (taskId: string, payload: UpdateTaskRequest) => Promise<TaskDto | null>;
+  handleCreate: (payload: CreateTaskRequest) => Promise<TaskDto | null>;
 }
 
 const TaskContext = createContext<TaskContextValue | null>(null);
@@ -124,7 +128,28 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error("Failed to delete task: ", err);
     }
-    
+  }
+
+  async function handleUpdate(taskId: string, payload: UpdateTaskRequest): Promise<TaskDto | null> {
+    try {
+      const updated = await updateTask(taskId, payload);
+      setTasks((prev) => prev.map((t) => (t.taskId === taskId ? updated : t)));
+      return updated;
+    } catch (err) {
+      console.error("Failed to update task:", err);
+      return null;
+    }
+  }
+
+  async function handleCreate(payload: CreateTaskRequest): Promise<TaskDto | null> {
+    try {
+      const created = await createTask(payload);
+      setTasks((prev) => [...prev, created]);
+      return created;
+    } catch (err) {
+      console.error("Failed to create task:", err);
+      return null;
+    }
   }
 
   return (
@@ -140,8 +165,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
           const task = tasks.find(t => t.taskId === taskId);
           return task?.startExpClaimed ?? false;
         },
-        getStartedAt: (taskId) => taskStartTimes[taskId], // NEW
+        getStartedAt: (taskId) => taskStartTimes[taskId], 
+        handleCreate,
         handleStart,
+        handleUpdate,
         handlePause,
         handleFinish,
         toggleSubtask,

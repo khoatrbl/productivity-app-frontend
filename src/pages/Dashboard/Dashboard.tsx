@@ -8,14 +8,17 @@ import ViewToggle, { type DashboardView } from "../../components/ViewToggle/View
 import { useTasks } from "../../context/TaskContext";
 import { useSanctuary } from "../../context/SanctuaryContext";
 import type { DailyQuoteData } from "../../types/DailyQuoteData";
+import PriorityFilterTabs, { type PriorityFilter } from "../../components/PriorityFilterTabs/PriorityFilterTabs";
 
 function Dashboard() {
     const [showIntro] = useState(() => sessionStorage.getItem("justLoggedIn") === "true");
     const [phase, setPhase] = useState<"intro" | "card">(showIntro ? "intro" : "card");
     const [view, setView] = useState<DashboardView>("list");
-    const { activeTask } = useTasks();
+    const { activeTask, visibleTasks } = useTasks();
     const { claimQuoteReward } = useSanctuary();
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
+    const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("ALL");
+    
 
     useEffect(() => {
         if (showIntro) {
@@ -59,7 +62,11 @@ function Dashboard() {
                     <ViewToggle value={view} onChange={setView} />
                 </div>
 
-                {view === "focus" ? <FocusSession /> : <TaskBoard />}
+                {view === "list" && (
+                    <PriorityFilterTabs tasks={visibleTasks} value={priorityFilter} onChange={setPriorityFilter} />
+                )}
+
+                {view === "focus" ? <FocusSession /> : <TaskBoard priorityFilter={priorityFilter} />}
             </div>
         </>
     );

@@ -5,6 +5,7 @@ import type { ProfileDto } from "../types/SanctuaryProfile";
 import type { TaskDto } from "../types/TaskCardData";
 import type { TaskPriority } from "../types/TaskPriority";
 import type { TaskStatus } from "../types/TaskStatus";
+import type { UpdateTaskRequest } from "../types/UpdateTaskRequest";
 
 export interface StartExpClaimResult {
   claimed: boolean,
@@ -60,6 +61,15 @@ export async function claimStartExpReward(taskId: string) : Promise<StartExpClai
   try {
     const {data} = await apiClient.post<StartExpClaimResult>(`/tasks/${taskId}/claims`);
 
+    return data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function updateTask(taskId: string, payload: UpdateTaskRequest): Promise<TaskDto> {
+  try {
+    const { data } = await apiClient.put<TaskDto>(`/tasks/${taskId}`, payload);
     return data;
   } catch (err) {
     throw toApiError(err);

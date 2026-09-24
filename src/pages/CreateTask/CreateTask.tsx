@@ -10,6 +10,7 @@ import MicroStepsEditor from "../../components/CreateTask/MicroStepsEditor";
 import { createTask } from "../../services/taskServices";
 import { useRewardEstimate } from "../../hooks/useRewardEstimate";
 import type { TaskPriority } from "../../types/TaskPriority";
+import { useTasks } from "../../context/TaskContext";
 
 function formatLocalDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -17,6 +18,7 @@ function formatLocalDate(d: Date): string {
 
 function CreateTask() {
   const navigate = useNavigate();
+  const { handleCreate } = useTasks();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("MEDIUM");
@@ -30,28 +32,31 @@ function CreateTask() {
 
   const { estimate, isLoading: isEstimating, isReady } = useRewardEstimate(title, priority, steps.length);
 
-  async function handleSubmit() {
+    async function handleSubmit() {
     if (!title.trim()) {
       setError("Give your quest a title first.");
       return;
     }
     setIsSubmitting(true);
     setError(null);
-    try {
-      await createTask({
-        title: title.trim(),
-        description: description.trim() || "",
-        dueDate: formatLocalDate(dueDate),
-        dueTime: `${String(hour24).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`,
-        priority,
-        sprintInMinutes,
-        subTasks: steps.filter((s) => s.trim()).map((content, position) => ({ content: content.trim(), position })),
-      });
+
+    const created = await handleCreate({
+      title: title.trim(),
+      description: description.trim() || "",
+      dueDate: formatLocalDate(dueDate),
+      dueTime: `${String(hour24).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`,
+      priority,
+      sprintInMinutes,
+      subTasks: steps
+        .filter((s) => s.trim())
+        .map((content, position) => ({ content: content.trim(), position })),
+    });
+
+    setIsSubmitting(false);
+    if (created) {
       navigate("/");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't create the task — try again.");
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      setError("Couldn't create the task — try again.");
     }
   }
 
