@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Timer, PawPrint, Calendar, Award, Plus, type LucideIcon } from "lucide-react";
+import { Timer, PawPrint, Calendar, Store, Plus, type LucideIcon } from "lucide-react";
 import { BOTTOM_NAV_SAFE_AREA } from "../../constants/layout";
 
 interface BottomNavigationProps {
@@ -20,7 +20,7 @@ const leftItems: NavItemConfig[] = [
 
 const rightItems: NavItemConfig[] = [
   { to: "/calendar", label: "Calendar", icon: Calendar },
-  { to: "/stats", label: "Stats", icon: Award },
+  { to: "/shop", label: "Shop", icon: Store },
 ];
 
 function NavItem({ to, label, icon: Icon, end }: NavItemConfig) {

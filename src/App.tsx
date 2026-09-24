@@ -3,7 +3,7 @@ import MainLayout from './layouts/MainLayout'
 import AuthenticatedProviders from './layouts/AuthenticatedProviders'
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Sanctuary from "./pages/Sanctuary/Sanctuary";
-import Stats from "./pages/Stats/Stats";
+import Shop from "./pages/Shop/Shop";
 import Settings from "./pages/Settings/Settings";
 import Calendar from "./pages/Calendar/Calendar";
 import Auth from "./pages/Auth/Auth";
@@ -33,7 +33,7 @@ function App() {
                 <Route path="/" element={<Dashboard/>}/>
                 <Route path="/sanctuary" element={<Sanctuary/>}/>
                 <Route path="/calendar" element={<Calendar/>}/>
-                <Route path="/stats" element={<Stats/>}/>
+                <Route path="/shop" element={<Shop/>}/>
                 <Route path="/settings" element={<Settings/>}/>
               </Route>
             </Route>

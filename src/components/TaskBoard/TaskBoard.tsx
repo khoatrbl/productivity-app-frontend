@@ -74,7 +74,7 @@ function TaskBoard({ priorityFilter }: TaskBoardProps) {
           {/* <span className="text-3xl">🦫</span> */}
           {visibleTasks.length === 0
             ? <img src={chillingCapybara} className="w-35"/> 
-            : <></>
+            : <img src={restingCapybara} className="w-35"/>
           }
           
           <p className="text-base font-semibold text-emerald-800">
