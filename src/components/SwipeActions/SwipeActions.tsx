@@ -11,6 +11,7 @@ interface SwipeActionsProps {
 const ACTION_WIDTH = 72;
 const PANEL_WIDTH = ACTION_WIDTH * 2;
 const OPEN_THRESHOLD = PANEL_WIDTH / 2;
+const CARD_RADIUS = 24; // px — matches rounded-3xl (1.5rem)
 
 function SwipeActions({ onDelete, onEdit, children }: SwipeActionsProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,20 +38,19 @@ function SwipeActions({ onDelete, onEdit, children }: SwipeActionsProps) {
   }
 
   return (
-    <div data-swipeable-card className="relative overflow-hidden rounded-3xl">
-      {/* Action panel, revealed behind the card as it slides open */}
+    <div
+      data-swipeable-card
+      className="relative bg-white"
+      style={{ clipPath: `inset(0 round ${CARD_RADIUS}px)` }}
+    >
+      {/* Always rendered, never mounted/unmounted — it's genuinely sitting
+          underneath the whole time, the drag just reveals more or less of it. */}
       <div className="absolute inset-y-0 right-0 flex" style={{ width: PANEL_WIDTH }}>
-        <button
-          onClick={handleEdit}
-          className="flex flex-1 flex-col items-center justify-center gap-1 bg-gray-400 text-white"
-        >
+        <button onClick={handleEdit} className="flex flex-1 flex-col items-center justify-center gap-1 bg-gray-400 text-white">
           <Pencil className="h-4 w-4" />
           <span className="text-[11px] font-medium">Edit</span>
         </button>
-        <button
-          onClick={handleDelete}
-          className="flex flex-1 flex-col items-center justify-center gap-1 rounded-r-3xl bg-red-500 text-white"
-        >
+        <button onClick={handleDelete} className="flex flex-1 flex-col items-center justify-center gap-1 bg-red-500 text-white">
           <Trash2 className="h-4 w-4" />
           <span className="text-[11px] font-medium">Delete</span>
         </button>
@@ -63,15 +63,12 @@ function SwipeActions({ onDelete, onEdit, children }: SwipeActionsProps) {
         dragElastic={0.05}
         onDragEnd={handleDragEnd}
         onClickCapture={(e) => {
-          // While open, the first tap anywhere on the card just closes the
-          // panel — it must NOT also trigger the card's own expand/collapse
-          // click underneath it, so this intercepts before it can bubble.
           if (isOpen) {
             e.stopPropagation();
             snapTo(0, false);
           }
         }}
-        className="relative bg-inherit"
+        className="relative bg-white [&>*]:!rounded-none"
       >
         {children}
       </motion.div>

@@ -4,7 +4,7 @@ import BottomNavigation from "../components/BottomNavigation/BottomNavigation";
 import SanctuaryCard from "../components/SanctuaryCard/SanctuaryCard";
 import { BOTTOM_NAV_TOTAL_HEIGHT } from "../constants/layout";
 
-const swipeRoutes = ["/", "/sanctuary", "/calendar", "/stats", "/settings"];
+const swipeRoutes = ["/", "/sanctuary", "/calendar", "/shop"];
 const NAV_SWIPE_THRESHOLD = 60;
 const NAV_SWIPE_VELOCITY = 500;
 
