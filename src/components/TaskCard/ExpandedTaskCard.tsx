@@ -136,7 +136,7 @@ function ExpandedTaskCard({
             disabled={isAnyTaskActive}
             className="flex w-full items-center justify-center gap-1.5 rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Start Task
+            Start Quest
             {!hasEarnedStartXp && <span className="text-emerald-200">+{START_TASK_XP} XP</span>}
           </button>
         )}
@@ -153,7 +153,7 @@ function ExpandedTaskCard({
               onClick={onFinish}
               className="flex flex-[2] items-center justify-center gap-1.5 rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white hover:bg-emerald-900"
             >
-              Finish Task
+              Finish Quest
               <span className="text-emerald-200">+{task.totalExp} XP</span>
             </button>
           </div>

@@ -7,10 +7,12 @@ import DueDateSection from "../../components/CreateTask/DueDateSection";
 import DueTimeSection from "../../components/CreateTask/DueTimeSection";
 import SprintDurationSection from "../../components/CreateTask/SprintDurationSection";
 import MicroStepsEditor from "../../components/CreateTask/MicroStepsEditor";
-import { createTask } from "../../services/taskServices";
 import { useRewardEstimate } from "../../hooks/useRewardEstimate";
 import type { TaskPriority } from "../../types/TaskPriority";
 import { useTasks } from "../../context/TaskContext";
+import { useSanctuary } from "../../context/SanctuaryContext";
+import defaultAvatar from "../../assets/angry_capybara_working.jpg"
+import capyCozyTip from "../../assets/capy_cozy_tip.png"
 
 function formatLocalDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -19,6 +21,7 @@ function formatLocalDate(d: Date): string {
 function CreateTask() {
   const navigate = useNavigate();
   const { handleCreate } = useTasks();
+  const { avatarUrl } = useSanctuary();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("MEDIUM");
@@ -62,13 +65,43 @@ function CreateTask() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fcf8f2]">
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-100 bg-white px-4 py-3">
         <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-gray-600">
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <p className="text-sm font-bold text-gray-900">New Task</p>
-        <div className="w-5" />
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-sm">
+            🦫
+          </div>
+          <p className="text-base font-bold text-gray-900">New Quest</p>
+        </div>
+        {avatarUrl ? (
+          <img src={avatarUrl ? avatarUrl : defaultAvatar} alt="Profile" className="h-8 w-8 rounded-full object-cover" />
+        ) : (
+          <div className="h-8 w-8" /> // keeps the title visually centered even with no avatar loaded yet
+        )}
       </div>
+
+      {/* Capy's Cozy Tip */}
+      <div className="mx-4 mt-4 flex items-center gap-3 rounded-3xl bg-gray-100 p-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-100 text-xl">
+          <img src={capyCozyTip} className="h-11 w-11 rounded-full object-cover object-top"/>
+        </div>
+        
+
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-bold text-gray-900">Capy's Cozy Tip</p>
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+              ADHD Gentle
+            </span>
+          </div>
+          <p className="mt-1 text-sm leading-snug text-gray-500">
+            Big tasks feel terrifying. Let's make it small enough to start effortlessly!
+          </p>
+        </div>
+      </div>  
 
       <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
         <div>
@@ -117,7 +150,7 @@ function CreateTask() {
         {error && <p className="text-xs font-medium text-red-500">{error}</p>}
       </div>
 
-      <div className="flex gap-2 border-t border-gray-100 bg-white px-4 py-3">
+      <div className="flex gap-2 border-t border-gray-100 bg-white px-4 py-3 rounded-t-3xl pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <button onClick={() => navigate(-1)} className="flex-1 rounded-full border border-gray-300 py-3 text-sm font-semibold text-gray-600">
           Cancel
         </button>

@@ -11,19 +11,29 @@ interface SwipeActionsProps {
 const ACTION_WIDTH = 72;
 const PANEL_WIDTH = ACTION_WIDTH * 2;
 const OPEN_THRESHOLD = PANEL_WIDTH / 2;
-const CARD_RADIUS = 24; // px — matches rounded-3xl (1.5rem)
 
 function SwipeActions({ onDelete, onEdit, children }: SwipeActionsProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
   const x = useMotionValue(0);
 
   function snapTo(target: number, open: boolean) {
-    animate(x, target, { type: "spring", stiffness: 400, damping: 40 });
+    animate(x, target, {
+      type: "spring",
+      stiffness: 400,
+      damping: 40,
+    });
+
     setIsOpen(open);
   }
 
   function handleDragEnd(_: unknown, info: PanInfo) {
-    const shouldOpen = info.offset.x < -OPEN_THRESHOLD || info.velocity.x < -500;
+    setIsDragging(false);
+
+    const shouldOpen =
+      info.offset.x < -OPEN_THRESHOLD || info.velocity.x < -500;
+
     snapTo(shouldOpen ? -PANEL_WIDTH : 0, shouldOpen);
   }
 
@@ -37,20 +47,27 @@ function SwipeActions({ onDelete, onEdit, children }: SwipeActionsProps) {
     onDelete();
   }
 
+  const cardIsSliding = isDragging || isOpen;
+
   return (
-    <div
-      data-swipeable-card
-      className="relative bg-white"
-      style={{ clipPath: `inset(0 round ${CARD_RADIUS}px)` }}
-    >
-      {/* Always rendered, never mounted/unmounted — it's genuinely sitting
-          underneath the whole time, the drag just reveals more or less of it. */}
-      <div className="absolute inset-y-0 right-0 flex" style={{ width: PANEL_WIDTH }}>
-        <button onClick={handleEdit} className="flex flex-1 flex-col items-center justify-center gap-1 bg-gray-400 text-white">
+    <div data-swipeable-card className="relative overflow-hidden rounded-3xl">
+      {/* Action panel */}
+      <div
+        className="absolute inset-y-0 right-0 flex"
+        style={{ width: PANEL_WIDTH }}
+      >
+        <button
+          onClick={handleEdit}
+          className="flex flex-1 flex-col items-center justify-center gap-1 bg-gray-400 text-white"
+        >
           <Pencil className="h-4 w-4" />
           <span className="text-[11px] font-medium">Edit</span>
         </button>
-        <button onClick={handleDelete} className="flex flex-1 flex-col items-center justify-center gap-1 bg-red-500 text-white">
+
+        <button
+          onClick={handleDelete}
+          className="flex flex-1 flex-col items-center justify-center gap-1 rounded-r-3xl bg-red-500 text-white"
+        >
           <Trash2 className="h-4 w-4" />
           <span className="text-[11px] font-medium">Delete</span>
         </button>
@@ -61,6 +78,7 @@ function SwipeActions({ onDelete, onEdit, children }: SwipeActionsProps) {
         style={{ x }}
         dragConstraints={{ left: -PANEL_WIDTH, right: 0 }}
         dragElastic={0.05}
+        onDragStart={() => setIsDragging(true)}
         onDragEnd={handleDragEnd}
         onClickCapture={(e) => {
           if (isOpen) {
@@ -68,7 +86,11 @@ function SwipeActions({ onDelete, onEdit, children }: SwipeActionsProps) {
             snapTo(0, false);
           }
         }}
-        className="relative bg-white [&>*]:!rounded-none"
+        className={`relative bg-white ${
+          cardIsSliding
+            ? "[&>*]:!rounded-l-3xl [&>*]:!rounded-r-none"
+            : "[&>*]:!rounded-3xl"
+        }`}
       >
         {children}
       </motion.div>
