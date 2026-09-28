@@ -47,7 +47,7 @@ function Auth() {
   const formCardRef = useRef<HTMLDivElement>(null);
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [rawPassword, setRawPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [timezone, setTimezone] = useState(detectTimezone);
@@ -65,21 +65,24 @@ function Auth() {
     e.preventDefault();
     setError(null);
 
-    if (mode === "register" && password !== confirmPassword) {
+    if (mode === "register" && rawPassword !== confirmPassword) {
       setError("Passwords don't match — give it another look.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const { token } =
-        mode === "signin"
-          ? await login(email, password)
-          : await register({ email, password, displayName, timezone });
-
-      setToken(token);
-      sessionStorage.setItem("justLoggedIn", "true");
-      navigate("/");
+      if (mode === "signin") {
+        const { token } = await login(email, rawPassword);
+        setToken(token);
+        sessionStorage.setItem("justLoggedIn", "true");
+        navigate("/");
+      } else {
+        const { token } = await register({ email, rawPassword, confirmPassword, displayName, timezone });
+        setToken(token);
+        sessionStorage.setItem("justLoggedIn", "true");
+        navigate("/onboarding/name-pet"); // only register goes here — every future login goes straight to "/"
+      }
     } catch (err) {
       if (err instanceof ApiError) {
         setError(
@@ -228,8 +231,8 @@ function Auth() {
                 type={showPassword ? "text" : "password"}
                 required
                 minLength={mode === "register" ? 8 : undefined}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={rawPassword}
+                onChange={(e) => setRawPassword(e.target.value)}
                 placeholder="Keep it cozy & memorable"
                 className="w-full bg-transparent text-base text-gray-700 outline-none placeholder:text-gray-300"
               />

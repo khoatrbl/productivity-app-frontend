@@ -27,7 +27,8 @@ export async function login(email: string, password: string): Promise<AuthRespon
 
 export async function register(payload: {
   email: string;
-  password: string;
+  rawPassword: string;
+  confirmPassword: string;
   displayName: string;
   timezone: string;
 }): Promise<AuthResponse> {

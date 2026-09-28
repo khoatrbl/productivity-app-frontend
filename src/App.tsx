@@ -11,6 +11,7 @@ import RequireAuth from "./components/RequireAuth/RequireAuth";
 import { AuthProvider } from "./context/AuthContext";
 import CreateTask from "./pages/CreateTask/CreateTask";
 import EditTask from "./pages/EditTask/EditTask";
+import NamePet from "./pages/NamePet/NamePet";
 
 function App() {
     return (
@@ -26,6 +27,7 @@ function App() {
                 </RequireAuth>
               }
             >
+              <Route path="/onboarding/name-pet" element={<NamePet />} />
               <Route path="/tasks/new" element={<CreateTask />} />
               <Route path="/tasks/:taskId/edit" element={<EditTask />} />
 

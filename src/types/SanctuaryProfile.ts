@@ -10,4 +10,5 @@ export interface ProfileDto {
     currentLevel: LevelDto;
     currentExp: number;
     coins: number;
+    hasCompletedOnBoarding: boolean;
 }
