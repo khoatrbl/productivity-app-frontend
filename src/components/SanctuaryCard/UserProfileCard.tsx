@@ -1,14 +1,14 @@
 import { Award, Citrus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useSanctuary } from "../../context/SanctuaryContext";
+import { useSanctuary } from "../../context/UserProfileContext";
 import appLogo from "../../assets/capydo-logo-512x512.png"
 import defaultAvatar from "../../assets/angry_capybara_working.jpg"
 import { motion, AnimatePresence } from "framer-motion";
-import SanctuaryCardSkeleton from "./SanctuaryCardSkeleton";
+import UserProfileCardSkeleton from "./UserProfileCardSkeleton";
 import { LevelUpOverlay } from "../LevelUpOverlay/LevelUpOverlay";
 import { useTasks } from "../../context/TaskContext";
 
-function SanctuaryCard() {
+function UserProfileCard() {
   const { name, subtitle, avatarUrl, level, exp, maxExp, coins, 
     recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp, isLoading } = useSanctuary();
       
@@ -17,7 +17,7 @@ function SanctuaryCard() {
   
 
   if (isLoading) {
-    return <SanctuaryCardSkeleton/>
+    return <UserProfileCardSkeleton/>
   }
 
   const progress = Math.min((exp / maxExp) * 100, 100);
@@ -127,4 +127,4 @@ function SanctuaryCard() {
   );
 }
 
-export default SanctuaryCard;
+export default UserProfileCard;

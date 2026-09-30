@@ -1,6 +1,6 @@
 import apiClient, { toApiError } from "../lib/apiClient";
 import type { CoinsDto } from "../types/CoinsDto";
-import type { ProfileDto } from "../types/SanctuaryProfile";
+import type { ProfileDto } from "../types/UserProfile";
 import type { UpdateExpDto } from "../types/UpdateExpDto";
 
 export async function getProfile(): Promise<ProfileDto> {

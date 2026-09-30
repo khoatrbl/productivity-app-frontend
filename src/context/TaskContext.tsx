@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { TaskDto } from "../types/TaskCardData";
 import { TaskStatus } from "../types/TaskStatus";
 import { createTask, deleteTask, getTasks, updateTask, updateTaskStatus } from "../services/taskServices";
-import { useSanctuary } from "./SanctuaryContext";
+import { useSanctuary } from "./UserProfileContext";
 import type { UpdateTaskRequest } from "../types/UpdateTaskRequest";
 import type { CreateTaskRequest } from "../types/CreateTaskRequest";
 

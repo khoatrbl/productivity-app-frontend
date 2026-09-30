@@ -1,6 +1,6 @@
 import apiClient, { toApiError } from "../lib/apiClient";
 import type { DailyQuoteData } from "../types/DailyQuoteData";
-import type { ProfileDto } from "../types/SanctuaryProfile";
+import type { ProfileDto } from "../types/UserProfile";
 
 export async function getDailyQuote(): Promise<DailyQuoteData> {
   try {

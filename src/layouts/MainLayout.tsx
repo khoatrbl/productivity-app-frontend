@@ -1,7 +1,7 @@
 import { motion, type PanInfo } from "framer-motion";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import BottomNavigation from "../components/BottomNavigation/BottomNavigation";
-import SanctuaryCard from "../components/SanctuaryCard/SanctuaryCard";
+import UserProfileCard from "../components/SanctuaryCard/UserProfileCard";
 import { BOTTOM_NAV_TOTAL_HEIGHT } from "../constants/layout";
 
 const swipeRoutes = ["/", "/sanctuary", "/calendar", "/shop"];
@@ -33,7 +33,7 @@ function MainLayout() {
     return (
         <div className="main-layout min-h-screen">
             <header className="fixed top-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 bg-[#fcf8f2]">
-                <SanctuaryCard />
+                <UserProfileCard />
             </header>
 
             <motion.main

@@ -1,18 +1,18 @@
 // layouts/AuthenticatedProviders.tsx
 import { Outlet } from "react-router-dom";
-import { SanctuaryProvider } from "../context/SanctuaryContext";
+import { UserProfileProvider } from "../context/UserProfileContext";
 import { TaskProvider } from "../context/TaskContext";
 import { PetProvider } from "../context/PetContext";
 
 function AuthenticatedProviders() {
   return (
-    <SanctuaryProvider>
+    <UserProfileProvider>
       <PetProvider>
         <TaskProvider>
             <Outlet />
         </TaskProvider>
       </PetProvider>
-    </SanctuaryProvider>
+    </UserProfileProvider>
   );
 }
 

@@ -10,7 +10,7 @@ import MicroStepsEditor from "../../components/CreateTask/MicroStepsEditor";
 import { useRewardEstimate } from "../../hooks/useRewardEstimate";
 import type { TaskPriority } from "../../types/TaskPriority";
 import { useTasks } from "../../context/TaskContext";
-import { useSanctuary } from "../../context/SanctuaryContext";
+import { useSanctuary } from "../../context/UserProfileContext";
 import defaultAvatar from "../../assets/angry_capybara_working.jpg"
 import capyCozyTip from "../../assets/capy_cozy_tip.png"
 

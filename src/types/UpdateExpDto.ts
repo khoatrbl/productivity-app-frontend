@@ -1,4 +1,4 @@
-import type { LevelDto } from "./SanctuaryProfile";
+import type { LevelDto } from "./UserProfile";
 
 export interface UpdateExpDto {
     currentLevel: LevelDto,

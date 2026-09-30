@@ -1,6 +1,6 @@
 
 
-function SanctuaryCardSkeleton() {
+function UserProfileCardSkeleton() {
   return (
     <div className="border-b border-gray-200 bg-white px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
       <div className="flex items-center justify-between animate-pulse">
@@ -28,4 +28,4 @@ function SanctuaryCardSkeleton() {
   );
 }
 
-export default SanctuaryCardSkeleton;
+export default UserProfileCardSkeleton;

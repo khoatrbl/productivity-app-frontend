@@ -6,7 +6,7 @@ import TaskBoard from "../../components/TaskBoard/TaskBoard";
 import FocusSession from "../../components/FocusSession/FocusSession";
 import ViewToggle, { type DashboardView } from "../../components/ViewToggle/ViewToggle";
 import { useTasks } from "../../context/TaskContext";
-import { useSanctuary } from "../../context/SanctuaryContext";
+import { useSanctuary } from "../../context/UserProfileContext";
 import type { DailyQuoteData } from "../../types/DailyQuoteData";
 import PriorityFilterTabs, { type PriorityFilter } from "../../components/PriorityFilterTabs/PriorityFilterTabs";
 

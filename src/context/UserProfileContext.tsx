@@ -4,7 +4,7 @@ import { useAuth } from "./AuthContext";
 import { claimDailyQuote } from "../services/quoteServices";
 import { claimStartExpReward } from "../services/taskServices";
 
-interface SanctuaryState {
+interface UserProfileState {
   name: string;
   subtitle: string;
   avatarUrl?: string;
@@ -29,7 +29,7 @@ interface LevelUpEvent {
   newLevel: number;
 }
 
-interface SanctuaryContextValue extends SanctuaryState {
+interface UserProfileContextValue extends UserProfileState {
   isLoading: boolean;
   error: string | null;
   addExp: (amount: number) => Promise<void>;
@@ -44,14 +44,14 @@ interface SanctuaryContextValue extends SanctuaryState {
   claimStartTaskReward: (taskId: string) => Promise<boolean>; 
 }
 
-const SanctuaryContext = createContext<SanctuaryContextValue | null>(null);
+const UserProfileContext = createContext<UserProfileContextValue | null>(null);
 
-const EMPTY_STATE: SanctuaryState = { name: "", subtitle: "", level: 1, exp: 0, maxExp: 100, coins: 0 };
+const EMPTY_STATE: UserProfileState = { name: "", subtitle: "", level: 1, exp: 0, maxExp: 100, coins: 0 };
 const STATIC_SUBTITLE = "Keep growing!";
 
-export function SanctuaryProvider({ children }: { children: ReactNode }) {
+export function UserProfileProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth();
-  const [state, setState] = useState<SanctuaryState>(EMPTY_STATE);
+  const [state, setState] = useState<UserProfileState>(EMPTY_STATE);
   const [recentGains, setRecentGains] = useState<XpGain[]>([]);
   const [recentCoinGains, setRecentCoinGains] = useState<CoinGain[]>([]);
   const [levelUpEvents, setLevelUpEvents] = useState<LevelUpEvent[]>([]);
@@ -170,16 +170,16 @@ export function SanctuaryProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <SanctuaryContext.Provider
+    <UserProfileContext.Provider
       value={{ ...state, isLoading, error, addExp, addCoins, claimQuoteReward, claimStartTaskReward, recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp }}
     >
       {children}
-    </SanctuaryContext.Provider>
+    </UserProfileContext.Provider>
   );
 }
 
 export function useSanctuary() {
-  const ctx = useContext(SanctuaryContext);
+  const ctx = useContext(UserProfileContext);
   if (!ctx) throw new Error("useSanctuary must be used within a SanctuaryProvider");
   return ctx;
 }

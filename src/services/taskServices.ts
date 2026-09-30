@@ -1,7 +1,7 @@
 
 import apiClient, { toApiError } from "../lib/apiClient";
 import type { CreateTaskRequest, RewardEstimate } from "../types/CreateTaskRequest";
-import type { ProfileDto } from "../types/SanctuaryProfile";
+import type { ProfileDto } from "../types/UserProfile";
 import type { TaskDto } from "../types/TaskCardData";
 import type { TaskPriority } from "../types/TaskPriority";
 import type { TaskStatus } from "../types/TaskStatus";
