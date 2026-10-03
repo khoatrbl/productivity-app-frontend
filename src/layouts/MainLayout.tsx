@@ -1,7 +1,7 @@
 import { motion, type PanInfo } from "framer-motion";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import BottomNavigation from "../components/BottomNavigation/BottomNavigation";
-import UserProfileCard from "../components/SanctuaryCard/UserProfileCard";
+import UserProfileCard from "../components/UserProfileCard/UserProfileCard";
 import { BOTTOM_NAV_TOTAL_HEIGHT } from "../constants/layout";
 
 const swipeRoutes = ["/", "/sanctuary", "/calendar", "/shop"];

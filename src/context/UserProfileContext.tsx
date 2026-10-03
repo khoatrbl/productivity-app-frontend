@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { getProfile, addExp as addExpBackend, addCoins as addCoinsBackend } from "../services/sanctuaryService";
+import { getProfile, addExp as addExpBackend, addCoins as addCoinsBackend } from "../services/userProfileServices";
 import { useAuth } from "./AuthContext";
 import { claimDailyQuote } from "../services/quoteServices";
 import { claimStartExpReward } from "../services/taskServices";

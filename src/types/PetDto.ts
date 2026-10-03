@@ -7,8 +7,10 @@ export interface PetLevelDto {
 }
 
 export interface PetItemDto {
-    item: ShopItemsDto,
-    purchasedAt: LocalDateTime
+  id: string;
+  shopItem: ShopItemsDto;
+  isEquipped: boolean;
+  purchasedAt: LocalDateTime; // ISO LocalDateTime
 }
 
 export interface PetDto {
@@ -17,5 +19,6 @@ export interface PetDto {
     petLevel: PetLevelDto,
     name: string,
     petCurrentExp: number,
+    petCurrentAffectionPoint: number,
     items: PetItemDto[]
 }
