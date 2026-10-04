@@ -42,6 +42,7 @@ interface UserProfileContextValue extends UserProfileState {
   clearLevelUp: (id: string) => void;
   claimQuoteReward: () => Promise<boolean>; // returns whether XP was actually granted
   claimStartTaskReward: (taskId: string) => Promise<boolean>; 
+  syncCoins: (newCoins: number) => void;
 }
 
 const UserProfileContext = createContext<UserProfileContextValue | null>(null);
@@ -169,9 +170,17 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     return claimed;
   }, [])
 
+  const syncCoins = useCallback((newCoins: number) => {
+    const delta = newCoins - stateRef.current.coins;
+    setState((prev) => ({ ...prev, coins: newCoins }));
+    if (delta !== 0) {
+      setRecentCoinGains((prev) => [...prev, { id: crypto.randomUUID(), amount: delta }]);
+    }
+  }, []);
+
   return (
     <UserProfileContext.Provider
-      value={{ ...state, isLoading, error, addExp, addCoins, claimQuoteReward, claimStartTaskReward, recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp }}
+      value={{ ...state, isLoading, error, addExp, addCoins, claimQuoteReward, claimStartTaskReward, recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp, syncCoins }}
     >
       {children}
     </UserProfileContext.Provider>

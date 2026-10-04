@@ -8,6 +8,7 @@ interface InventoryContextValue {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  upsertItem: (item: InventoryItemDto) => void;
 }
 
 const InventoryContext = createContext<InventoryContextValue | null>(null);
@@ -32,6 +33,16 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const upsertItem = useCallback((updated: InventoryItemDto) => {
+    setItems((prev) => {
+        const exists = prev.some((i) => i.treatDto.id === updated.treatDto.id);
+        const next = exists
+        ? prev.map((i) => (i.treatDto.id === updated.treatDto.id ? updated : i))
+        : [...prev, updated];
+        return sortByPrice(next);
+    });
+  }, []);
+
   useEffect(() => {
     if (!token) return;
     setIsLoading(true);
@@ -39,7 +50,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [token, refresh]);
 
   return (
-    <InventoryContext.Provider value={{ items, isLoading, error, refresh }}>
+    <InventoryContext.Provider value={{ items, isLoading, error, refresh, upsertItem }}>
       {children}
     </InventoryContext.Provider>
   );
