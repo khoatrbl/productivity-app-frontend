@@ -1,4 +1,4 @@
-import { Crown, Footprints, Shirt, type LucideIcon } from "lucide-react";
+import { Crown, Footprints, Loader2, Shirt, type LucideIcon } from "lucide-react";
 import type { PetItemDto } from "../../types/PetDto";
 import { ItemType } from "../../types/ItemType";
 
@@ -10,10 +10,11 @@ const TYPE_ICON: Record<ItemType, LucideIcon> = {
 
 interface WardrobeItemCardProps {
   item: PetItemDto;
+  isBusy?: boolean;
   onToggleEquip: () => void;
 }
 
-function WardrobeItemCard({ item, onToggleEquip }: WardrobeItemCardProps) {
+function WardrobeItemCard({ item, isBusy = false, onToggleEquip }: WardrobeItemCardProps) {
   const { shopItem, isEquipped } = item;
   const Icon = TYPE_ICON[shopItem.itemType];
 
@@ -34,13 +35,14 @@ function WardrobeItemCard({ item, onToggleEquip }: WardrobeItemCardProps) {
 
       <button
         onClick={onToggleEquip}
-        className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+        disabled={isBusy}
+        className={`flex min-w-[76px] shrink-0 items-center justify-center rounded-full px-3 py-1 text-xs font-semibold transition-colors disabled:opacity-60 ${
           isEquipped
             ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
             : "border border-gray-200 text-gray-600 hover:bg-gray-50"
         }`}
       >
-        {isEquipped ? "Equipped" : "Equip"}
+        {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isEquipped ? "Equipped" : "Equip"}
       </button>
     </div>
   );

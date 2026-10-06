@@ -99,6 +99,13 @@ function Sanctuary() {
     setFeedingId(null);
   }
 
+  async function handleToggleEquip(petItemId: string) {
+    const result = await care.toggleEquip(petItemId);
+    if (!result.ok && result.reason !== "busy") {
+      setNotice({ kind: "error", text: result.message ?? "Something went wrong" });
+    }
+  }
+
   if (error) return <div className="px-4 text-sm text-red-500">{error}</div>;
   if (isLoading || !pet) {
     return (
@@ -199,7 +206,7 @@ function Sanctuary() {
 
         <div className="flex flex-col gap-2">
           {visibleItems.map((item) => (
-            <WardrobeItemCard key={item.id} item={item} onToggleEquip={() => care.toggleEquip(item.id)} />
+            <WardrobeItemCard key={item.id} item={item} onToggleEquip={() => handleToggleEquip(item.id)} />
           ))}
 
           {visibleItems.length === 0 && (

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Cookie, Crown, Footprints, Shirt, type LucideIcon } from "lucide-react";
 import { ApiError } from "../../lib/apiClient";
-import { getShopItems, purchaseTreat } from "../../services/shopServices";
+import { getShopItems, purchaseShopItem, purchaseTreat } from "../../services/shopServices";
 import { useSanctuary } from "../../context/UserProfileContext";
 import { usePet } from "../../context/PetContext";
 import { useInventory } from "../../context/InventoryContext";
@@ -14,6 +14,7 @@ import ShopFilterTabs, { type ShopFilter } from "../../components/ShopFilterTab/
 import ShopItemCard, { type ShopCardState } from "../../components/ShopItemCard/ShopItemCard";
 import type { TreatPurchaseResponseDto } from "../../types/TreatPurchaseDto";
 import { useLocation } from "react-router-dom";
+import type { PetItemPurchaseResponse } from "../../types/PetItemPurchaseResponse";
 
 const SECTIONS: { type: ItemType; title: string; icon: LucideIcon }[] = [
   { type: ItemType.HEADWEAR, title: "Hats & Headpieces", icon: Crown },
@@ -54,7 +55,7 @@ function CardGridSkeleton({ count }: { count: number }) {
 
 function Shop() {
   const { level: userLevel, coins, syncCoins } = useSanctuary();
-  const { pet } = usePet();
+  const { pet, addPetItem } = usePet();
   const inventory = useInventory();
 
   const location = useLocation();
@@ -67,8 +68,6 @@ function Shop() {
   const [error, setError] = useState<string | null>(null);
   const [buyingId, setBuyingId] = useState<string | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
-  // MOCK: cosmetic purchases this session, until the cosmetics endpoint exists
-  const [boughtIds, setBoughtIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     getShopItems()
@@ -84,14 +83,14 @@ function Shop() {
   }, [notice]);
 
   const ownership = useMemo(() => {
-    const owned = new Set<string>(boughtIds);
+    const owned = new Set<string>();
     const equipped = new Set<string>();
     (pet?.items ?? []).forEach((pi) => {
       owned.add(pi.shopItem.id);
       if (pi.isEquipped) equipped.add(pi.shopItem.id);
     });
     return { owned, equipped };
-  }, [pet, boughtIds]);
+  }, [pet]);
 
   function stateOf(item: ShopItemsDto): ShopCardState {
     if (ownership.equipped.has(item.id)) return "equipped";
@@ -143,10 +142,35 @@ function Shop() {
     setBuyingId(null);
   }
 
-  function handleBuyItem(item: ShopItemsDto) {
-    if (buyingId || ownership.owned.has(item.id)) return; // cosmetics: once only
-    // TODO: call the cosmetics purchase endpoint, then refresh pet + coins
-    setBoughtIds((prev) => new Set(prev).add(item.id));
+  async function handleBuyItem(item: ShopItemsDto) {
+    if (buyingId || ownership.owned.has(item.id) || coins < item.price) return;
+
+    setBuyingId(item.id);
+
+    let res: PetItemPurchaseResponse;
+    try {
+      res = await purchaseShopItem(item.id);
+    } catch (err) {
+      const apiErr = err instanceof ApiError ? err : new ApiError("Purchase failed", 0);
+      const text =
+        apiErr.status === 409 ? "You already own this one" :
+        apiErr.status === 422 ? "Not enough citrus for that one" :
+        apiErr.status === 403 ? `Reach Lv. ${item.requiredUserLevel} to unlock this` :
+        apiErr.message;
+      setNotice({ kind: "error", text });
+      setBuyingId(null);
+      return;
+    }
+
+    try {
+      addPetItem(res.petItem);
+      syncCoins(res.coins);
+    } catch (uiErr) {
+      console.error("Purchase succeeded but updating the UI failed:", uiErr);
+    }
+
+    setNotice({ kind: "success", text: `${item.name} added to the wardrobe` });
+    setBuyingId(null);
   }
 
   const showTreats = filter === "TREATS";

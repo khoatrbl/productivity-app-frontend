@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { getMyPet, updatePetName as updatePetNameBackend } from "../services/petServices";
-import type { PetDto } from "../types/PetDto";
+import type { PetDto, PetItemDto } from "../types/PetDto";
 import { useAuth } from "./AuthContext";
 
 interface PetContextValue {
@@ -9,6 +9,8 @@ interface PetContextValue {
   error: string | null;
   renamePet: (name: string) => Promise<void>;
   syncPet: (pet: PetDto) => void;
+  addPetItem: (item: PetItemDto) => void;
+  refreshPet: () => Promise<void>;
 }
 
 const PetContext = createContext<PetContextValue | null>(null);
@@ -48,8 +50,24 @@ export function PetProvider({ children }: { children: ReactNode }) {
 
   const syncPet = useCallback((next: PetDto) => setPet(next), []);
 
+  const addPetItem = useCallback((item: PetItemDto) => {
+    setPet((prev) =>
+      prev
+        ? { ...prev, items: [...(prev.items ?? []).filter((i) => i.id !== item.id), item] }
+        : prev
+    );
+  }, []);
+
+  const refreshPet = useCallback(async () => {
+    try {
+      setPet(await getMyPet());
+    } catch (err) {
+      console.error("Couldn't refresh pet:", err);
+    }
+  }, []);
+
   return (
-    <PetContext.Provider value={{ pet, isLoading, error, renamePet, syncPet }}>
+    <PetContext.Provider value={{ pet, isLoading, error, renamePet, syncPet, addPetItem, refreshPet }}>
       {children}
     </PetContext.Provider>
   );

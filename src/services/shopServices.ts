@@ -1,4 +1,5 @@
 import apiClient, { toApiError } from "../lib/apiClient";
+import type { PetItemPurchaseResponse } from "../types/PetItemPurchaseResponse";
 import type { ShopItemsDto } from "../types/ShopItemsDto";
 import type { TreatDto } from "../types/TreatDto";
 import type { TreatPurchaseResponseDto } from "../types/TreatPurchaseDto";
@@ -25,4 +26,15 @@ export async function getAllTreats(): Promise<TreatDto[]> {
 export async function purchaseTreat(treatId: string): Promise<TreatPurchaseResponseDto> {
   const res = await apiClient.post<TreatPurchaseResponseDto>(`/shop/items/treats/${treatId}/purchases`);
   return res.data;
+}
+
+export async function purchaseShopItem(shopItemId: string): Promise<PetItemPurchaseResponse> {
+    try {
+        const {data} = await apiClient.post<PetItemPurchaseResponse>(`/shop/items/${shopItemId}/purchases`);
+
+        return data;
+    } catch (error) {
+        throw toApiError(error);
+    }
+
 }

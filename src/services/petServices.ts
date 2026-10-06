@@ -1,5 +1,5 @@
 import apiClient, { toApiError } from "../lib/apiClient";
-import type { PetDto } from "../types/PetDto";
+import type { PetDto, PetItemDto } from "../types/PetDto";
 import type { PetFeedResponse } from "../types/PetFeedResponse";
 
 export async function getMyPet(): Promise<PetDto> {
@@ -34,6 +34,14 @@ export async function petPet(): Promise<PetDto> {
   try {
     const res = await apiClient.post<PetDto>("/pets/pettings");
     return res.data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function updatePetItemState(petItemId: string, isEquipped: boolean): Promise<void> {
+  try {
+    await apiClient.patch(`/pets/items/${petItemId}`, { isEquipped });
   } catch (err) {
     throw toApiError(err);
   }
