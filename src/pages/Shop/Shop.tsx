@@ -119,7 +119,7 @@ function Shop() {
     // 1. The API call: only this can be a "failed purchase"
     let res: TreatPurchaseResponseDto;
     try {
-        res = await purchaseTreat(treat.id, 1);
+        res = await purchaseTreat(treat.id);
     } catch (err) {
         const apiErr = err instanceof ApiError ? err : new ApiError("Purchase failed", 0);
         setNotice({
