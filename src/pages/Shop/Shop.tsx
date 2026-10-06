@@ -139,7 +139,7 @@ function Shop() {
         await inventory.refresh(); // fall back to re-syncing from the server
     }
 
-    setNotice({ kind: "success", text: `+1 ${treat.treatName} · -${res.coinsSpent} citrus` });
+    setNotice({ kind: "success", text: `+1 ${treat.treatName}` });
     setBuyingId(null);
   }
 

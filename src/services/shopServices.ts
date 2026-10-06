@@ -22,7 +22,7 @@ export async function getAllTreats(): Promise<TreatDto[]> {
     }
 }
 
-export async function purchaseTreat(treatId: string, quantity = 1): Promise<TreatPurchaseResponseDto> {
-  const res = await apiClient.post<TreatPurchaseResponseDto>(`/shop/items/treats/${treatId}/purchases`, { quantity });
+export async function purchaseTreat(treatId: string): Promise<TreatPurchaseResponseDto> {
+  const res = await apiClient.post<TreatPurchaseResponseDto>(`/shop/items/treats/${treatId}/purchases`);
   return res.data;
 }
