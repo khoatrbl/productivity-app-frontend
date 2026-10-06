@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useState } from "react";
-import { AFFECTION_PER_PET } from "../../data/mockSanctuary";
+import type { PetResult } from "../../hooks/usePetCare";
 import MockCapybara from "../MockCapybara/MockCapybara";
 
 interface PetStageProps {
@@ -10,7 +10,7 @@ interface PetStageProps {
   petsLeft: number;
   cooldownMsLeft: number;
   isAffectionMaxed: boolean;
-  onPet: () => boolean;
+  onPet: () => Promise<PetResult>;
 }
 
 function formatCooldown(ms: number) {
@@ -23,16 +23,22 @@ function formatCooldown(ms: number) {
 // PLACEHOLDER: swap <MockCapybara /> for the real pet animation later.
 function PetStage({ petName, canPet, petsLeft, cooldownMsLeft, isAffectionMaxed, onPet }: PetStageProps) {
   const controls = useAnimationControls();
-  const [hearts, setHearts] = useState<{ id: string; x: number }[]>([]);
+  const [hearts, setHearts] = useState<{ id: string; x: number; amount: number }[]>([]);
 
-  function handleTap() {
-    if (!onPet()) {
-      controls.start({ x: [0, -4, 4, -2, 0], transition: { duration: 0.3 } });
+  async function handleTap() {
+    // Squish right away so the tap feels instant
+    controls.start({ scaleY: [1, 0.9, 1.05, 1], scaleX: [1, 1.08, 0.97, 1], transition: { duration: 0.4 } });
+
+    const result = await onPet();
+    if (!result.ok) {
+      if (result.reason !== "busy") {
+        controls.start({ x: [0, -4, 4, -2, 0], transition: { duration: 0.3 } });
+      }
       return;
     }
-    controls.start({ scaleY: [1, 0.9, 1.05, 1], scaleX: [1, 1.08, 0.97, 1], transition: { duration: 0.4 } });
+
     const id = crypto.randomUUID();
-    setHearts((h) => [...h, { id, x: Math.random() * 60 - 30 }]);
+    setHearts((h) => [...h, { id, x: Math.random() * 60 - 30, amount: result.gained }]);
     setTimeout(() => setHearts((h) => h.filter((x) => x.id !== id)), 900);
   }
 
@@ -71,7 +77,7 @@ function PetStage({ petName, canPet, petsLeft, cooldownMsLeft, isAffectionMaxed,
               transition={{ duration: 0.8 }}
               className="pointer-events-none absolute left-1/2 top-0 flex items-center gap-0.5 text-sm font-semibold text-rose-500"
             >
-              <Heart className="h-4 w-4 fill-rose-400 text-rose-400" />+{AFFECTION_PER_PET}
+              <Heart className="h-4 w-4 fill-rose-400 text-rose-400" />+{h.amount}
             </motion.span>
           ))}
         </AnimatePresence>

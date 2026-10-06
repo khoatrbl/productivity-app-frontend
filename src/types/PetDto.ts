@@ -14,11 +14,13 @@ export interface PetItemDto {
 }
 
 export interface PetDto {
-    id: string,
-    ownerId: string,
-    petLevel: PetLevelDto,
-    name: string,
-    petCurrentExp: number,
-    petCurrentAffectionPoint: number,
-    items: PetItemDto[]
+  id: string;
+  ownerId: string;
+  petLevel: PetLevelDto;
+  name: string;
+  petCurrentExp: number;
+  petCurrentAffectionPoint: number;
+  pettingsLeft: number;
+  petCooldownUntil: string | null; // ISO instant
+  items: PetItemDto[];
 }

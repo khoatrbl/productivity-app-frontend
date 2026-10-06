@@ -29,3 +29,12 @@ export async function feedPet(treatId: string): Promise<PetFeedResponse> {
     throw toApiError(error);
   }
 }
+
+export async function petPet(): Promise<PetDto> {
+  try {
+    const res = await apiClient.post<PetDto>("/pets/pettings");
+    return res.data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}

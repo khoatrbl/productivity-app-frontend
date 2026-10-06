@@ -1,50 +1,62 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  AFFECTION_PER_PET, MAX_AFFECTION, PETS_PER_WINDOW, PET_COOLDOWN_MS,
-} from "../data/mockSanctuary";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { petPet } from "../services/petServices";
+import { usePet } from "../context/PetContext";
+import { ApiError } from "../lib/apiClient";
 import type { PetDto, PetItemDto } from "../types/PetDto";
 
+const MAX_AFFECTION = 100;
+
+export type PetResult =
+  | { ok: true; gained: number }
+  | { ok: false; reason: "napping" | "maxed" | "busy" | "error"; message?: string };
+
 export function usePetCare(pet: PetDto | null) {
+  const { syncPet } = usePet();
   const [items, setItems] = useState<PetItemDto[]>(pet?.items ?? []);
-  const [affection, setAffection] = useState(pet?.petCurrentAffectionPoint ?? 0);
-  const [petsLeft, setPetsLeft] = useState(PETS_PER_WINDOW);
-  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
+  const inFlight = useRef(false);
 
   useEffect(() => {
-    if (!pet) return;
-    setItems(pet.items ?? []);
-    setAffection(pet.petCurrentAffectionPoint ?? 0);
+    if (pet) setItems(pet.items ?? []);
   }, [pet]);
 
+  const cooldownUntilMs = pet?.petCooldownUntil ? new Date(pet.petCooldownUntil).getTime() : null;
+  const cooldownMsLeft = cooldownUntilMs ? Math.max(0, cooldownUntilMs - now) : 0;
+  const isNapping = cooldownMsLeft > 0;
+
+  // Tick once a second while napping
   useEffect(() => {
-    if (!cooldownUntil) return;
-    const id = setInterval(() => {
-      const t = Date.now();
-      setNow(t);
-      if (t >= cooldownUntil) {
-        setCooldownUntil(null);
-        setPetsLeft(PETS_PER_WINDOW);
-      }
-    }, 1000);
+    if (!cooldownUntilMs) return;
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [cooldownUntil]);
+  }, [cooldownUntilMs]);
 
-  const cooldownMsLeft = cooldownUntil ? Math.max(0, cooldownUntil - now) : 0;
+  const affection = pet?.petCurrentAffectionPoint ?? 0;
   const isAffectionMaxed = affection >= MAX_AFFECTION;
-  const canPet = petsLeft > 0 && !cooldownUntil && !isAffectionMaxed;
+  // When a nap has just ended, the server refills on the next request; show 5 meanwhile
+  const petsLeft = cooldownUntilMs && !isNapping ? 5 : pet?.pettingsLeft ?? 0;
+  const canPet = !!pet && !isNapping && !isAffectionMaxed && petsLeft > 0;
 
-  const petTheCapy = useCallback((): boolean => {
-    if (!canPet) return false;
-    setAffection((a) => Math.min(MAX_AFFECTION, a + AFFECTION_PER_PET));
-    const remaining = petsLeft - 1;
-    setPetsLeft(remaining);
-    if (remaining === 0) {
-      setNow(Date.now());
-      setCooldownUntil(Date.now() + PET_COOLDOWN_MS);
+  const petTheCapy = useCallback(async (): Promise<PetResult> => {
+    if (inFlight.current) return { ok: false, reason: "busy" };
+    if (!canPet) return { ok: false, reason: isNapping ? "napping" : "maxed" };
+
+    inFlight.current = true;
+    const before = affection;
+    try {
+      const updated = await petPet();
+      syncPet(updated);
+      return { ok: true, gained: updated.petCurrentAffectionPoint - before };
+    } catch (err) {
+      const apiErr = err instanceof ApiError ? err : new ApiError("Couldn't pet right now", 0);
+      if (apiErr.status === 429) return { ok: false, reason: "napping" };
+      if (apiErr.status === 409) return { ok: false, reason: "maxed" };
+      return { ok: false, reason: "error", message: apiErr.message };
+    } finally {
+      inFlight.current = false;
     }
-    return true;
-  }, [canPet, petsLeft]);
+  }, [canPet, isNapping, affection, syncPet]);
 
   const toggleEquip = useCallback((petItemId: string) => {
     setItems((prev) => {
