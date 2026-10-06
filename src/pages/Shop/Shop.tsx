@@ -13,6 +13,7 @@ import { mockItemArt, TREAT_ART } from "../../data/mockShop";
 import ShopFilterTabs, { type ShopFilter } from "../../components/ShopFilterTab/ShopFilterTab";
 import ShopItemCard, { type ShopCardState } from "../../components/ShopItemCard/ShopItemCard";
 import type { TreatPurchaseResponseDto } from "../../types/TreatPurchaseDto";
+import { useLocation } from "react-router-dom";
 
 const SECTIONS: { type: ItemType; title: string; icon: LucideIcon }[] = [
   { type: ItemType.HEADWEAR, title: "Hats & Headpieces", icon: Crown },
@@ -56,10 +57,14 @@ function Shop() {
   const { pet } = usePet();
   const inventory = useInventory();
 
+  const location = useLocation();
+  const [filter, setFilter] = useState<ShopFilter>(
+    (location.state as { filter?: ShopFilter } | null)?.filter ?? "TREATS"
+  );
+
   const [items, setItems] = useState<ShopItemsDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<ShopFilter>("TREATS");
   const [buyingId, setBuyingId] = useState<string | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
   // MOCK: cosmetic purchases this session, until the cosmetics endpoint exists

@@ -205,7 +205,10 @@ function Sanctuary() {
           {visibleItems.length === 0 && (
             <div className="flex flex-col items-center gap-1 rounded-3xl border border-dashed border-emerald-200 bg-emerald-50/40 py-8 text-center">
               <p className="text-sm font-semibold text-emerald-800">Nothing here yet</p>
-              <button onClick={() => navigate("/shop")} className="text-xs font-medium text-emerald-700 underline">
+              <button
+                onClick={() => navigate("/shop", { state: { filter: itemType } })}
+                className="text-xs font-medium text-emerald-700 underline"
+              >
                 Browse the shop
               </button>
             </div>
