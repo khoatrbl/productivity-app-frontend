@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Cookie, Shirt } from "lucide-react";
 import { usePet } from "../../context/PetContext";
@@ -9,6 +9,14 @@ import PetInfoCard from "../../components/PetInfoCard/PetInfoCard";
 import SnackCard from "../../components/SnackCard/SnackCard";
 import WardrobeItemCard from "../../components/WardrobeItemCard/WardrobeItemCard";
 import { useInventory } from "../../context/InventoryContext";
+import type { InventoryItemDto } from "../../types/InventoryItemDto";
+import type { PetFeedResponse } from "../../types/PetFeedResponse";
+import { feedPet } from "../../services/petServices";
+import { ApiError } from "../../lib/apiClient";
+import { AnimatePresence, motion } from "framer-motion";
+import { useSanctuary } from "../../context/UserProfileContext";
+import type { PetFortuneDto } from "../../types/PetFortuneDto";
+import { PetLevelUpOverlay } from "../../components/PetLevelUpOverlay.tsx/PetLevelUpOverlay";
 
 const ITEM_TABS: { value: ItemType; label: string }[] = [
   { value: ItemType.HEADWEAR, label: "Headwear" },
@@ -18,15 +26,78 @@ const ITEM_TABS: { value: ItemType; label: string }[] = [
 
 function Sanctuary() {
   const navigate = useNavigate();
-  const { pet, isLoading, error, renamePet } = usePet();
+  const { pet, isLoading, error, renamePet, syncPet } = usePet();
   const care = usePetCare(pet); // called unconditionally; handles pet === null
   const inventory = useInventory();
   const [itemType, setItemType] = useState<ItemType>(ItemType.HEADWEAR);
+
+  const [feedingId, setFeedingId] = useState<string | null>(null);
+  const [xpPop, setXpPop] = useState<{ id: string; amount: number } | null>(null);
+  const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+
+  const { syncCoins } = useSanctuary();
+  const [levelUp, setLevelUp] = useState<{
+    id: string;
+    fromLevel: number;
+    toLevel: number;
+    fortune: PetFortuneDto | null;
+  } | null>(null);
 
   const visibleItems = useMemo(
     () => care.items.filter((i) => i.shopItem.itemType === itemType),
     [care.items, itemType]
   );
+
+  useEffect(() => {
+    if (!notice) return;
+    const id = setTimeout(() => setNotice(null), 2500);
+    return () => clearTimeout(id);
+  }, [notice]);
+
+  async function handleFeed(entry: InventoryItemDto) {
+    const treat = entry.treatDto;
+    if (feedingId || entry.quantity <= 0) return;
+
+    setFeedingId(treat.id);
+
+    let res: PetFeedResponse;
+    try {
+      res = await feedPet(treat.id);
+    } catch (err) {
+      const apiErr = err instanceof ApiError ? err : new ApiError("Couldn't feed right now", 0);
+      const text =
+        apiErr.status === 409 ? `${pet?.name ?? "Your capy"} is fully grown!` :
+        apiErr.status === 422 ? "You're out of that treat" :
+        apiErr.message;
+      setNotice({ kind: "error", text });
+      setFeedingId(null);
+      return;
+    }
+
+    try {
+      syncPet(res.pet);
+      inventory.upsertItem(res.inventoryItem);
+      if (res.fortuneInventoryItem) inventory.upsertItem(res.fortuneInventoryItem);
+      if (typeof res.coins === "number") syncCoins(res.coins);
+    } catch (uiErr) {
+      console.error("Feed succeeded but updating the UI failed:", uiErr);
+      await inventory.refresh();
+    }
+
+    setXpPop({ id: crypto.randomUUID(), amount: res.expGained });
+
+    if (res.levelsGained > 0) {
+      const toLevel = res.pet.petLevel.level;
+      setLevelUp({
+        id: crypto.randomUUID(),
+        fromLevel: toLevel - res.levelsGained,
+        toLevel,
+        fortune: res.fortune,
+      });
+    }
+
+    setFeedingId(null);
+  }
 
   if (error) return <div className="px-4 text-sm text-red-500">{error}</div>;
   if (isLoading || !pet) {
@@ -55,8 +126,9 @@ function Sanctuary() {
           exp={care.exp}
           maxExp={care.maxExp}
           affection={care.affection}
-          canRename={true /* TODO: wire to a "renamed once" flag when PetDto has one */}
+          canRename={true}
           onRename={renamePet}
+          xpPop={xpPop}
         />
       </section>
 
@@ -64,6 +136,23 @@ function Sanctuary() {
         <h3 className="mb-2.5 flex items-center gap-1.5 px-1 text-base font-semibold text-gray-800">
             <Cookie className="h-4 w-4 text-amber-600" /> Snack Pantry
         </h3>
+
+        <AnimatePresence>
+          {notice && (
+            <motion.div
+              key={notice.text}
+              role="status"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className={`rounded-2xl px-3 py-2 text-center text-xs font-semibold shadow-sm ${
+                notice.kind === "success" ? "bg-emerald-700 text-white" : "bg-red-50 text-red-600"
+              }`}
+            >
+              {notice.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {inventory.isLoading ? (
             <div className="grid grid-cols-3 gap-2">
@@ -75,14 +164,16 @@ function Sanctuary() {
             <p className="px-1 text-sm text-red-500">{inventory.error}</p>
         ) : (
             <div className="grid grid-cols-3 gap-2">
-            {inventory.items.map((item) => (
+              {inventory.items.map((item) => (
                 <SnackCard
-                key={item.treatDto.id}
-                item={item}
-                onFeed={() => console.log("TODO: feed", item.treatDto.treatTier)}
-                onShop={() => navigate("/shop")}
+                  key={item.treatDto.id}
+                  item={item}
+                  isFeeding={feedingId === item.treatDto.id}
+                  disabled={!!feedingId && feedingId !== item.treatDto.id}
+                  onFeed={() => handleFeed(item)}
+                  onShop={() => navigate("/shop")}
                 />
-            ))}
+              ))}
             </div>
         )}
       </section>
@@ -121,6 +212,17 @@ function Sanctuary() {
           )}
         </div>
       </section>
+
+      {levelUp && pet && (
+        <PetLevelUpOverlay
+          key={levelUp.id}
+          petName={pet.name}
+          fromLevel={levelUp.fromLevel}
+          toLevel={levelUp.toLevel}
+          fortune={levelUp.fortune}
+          onDismiss={() => setLevelUp(null)}
+        />
+      )}
     </div>
   );
 }

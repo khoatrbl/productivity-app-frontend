@@ -8,6 +8,7 @@ interface PetContextValue {
   isLoading: boolean;
   error: string | null;
   renamePet: (name: string) => Promise<void>;
+  syncPet: (pet: PetDto) => void;
 }
 
 const PetContext = createContext<PetContextValue | null>(null);
@@ -45,8 +46,10 @@ export function PetProvider({ children }: { children: ReactNode }) {
     setPet(updated);
   }, []);
 
+  const syncPet = useCallback((next: PetDto) => setPet(next), []);
+
   return (
-    <PetContext.Provider value={{ pet, isLoading, error, renamePet }}>
+    <PetContext.Provider value={{ pet, isLoading, error, renamePet, syncPet }}>
       {children}
     </PetContext.Provider>
   );

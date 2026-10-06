@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, Heart, Pencil, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -11,9 +12,10 @@ interface PetInfoCardProps {
   affection: number; // 0–100
   canRename: boolean;
   onRename: (name: string) => Promise<void>;
+  xpPop?: {id: string, amount: number} | null;
 }
 
-function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename }: PetInfoCardProps) {
+function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename, xpPop }: PetInfoCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(name);
   const [isSaving, setIsSaving] = useState(false);
@@ -102,7 +104,7 @@ function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename 
         </p>
       )}
 
-      <div className="mt-3">
+      <div className="relative mt-3">
         <div className="flex items-center justify-between text-xs">
           <span className="flex items-center gap-1 font-medium text-gray-600">
             <Sparkles className="h-3.5 w-3.5 text-emerald-600" /> Pet XP
@@ -112,6 +114,20 @@ function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename 
         <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-gray-100">
           <div className="h-full rounded-full bg-emerald-600 transition-[width] duration-500" style={{ width: `${expPercent}%` }} />
         </div>
+
+        <AnimatePresence>
+          {xpPop && (
+            <motion.span
+              key={xpPop.id}
+              initial={{ opacity: 0, y: 0 }}
+              animate={{ opacity: [0, 1, 1, 0], y: -22 }}
+              transition={{ duration: 1.1, ease: "easeOut" }}
+              className="pointer-events-none absolute right-0 top-0 text-xs font-bold text-emerald-600"
+            >
+              +{xpPop.amount} XP
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="mt-3 rounded-2xl border border-rose-100 bg-rose-50/50 px-3 py-2.5">

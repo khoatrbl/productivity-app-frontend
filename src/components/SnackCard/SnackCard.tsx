@@ -1,4 +1,4 @@
-import { Cookie, ShoppingBag, Sparkles } from "lucide-react";
+import { Cookie, Loader2, ShoppingBag, Sparkles } from "lucide-react";
 import type { TreatTier } from "../../types/TreatDto";
 import type { InventoryItemDto } from "../../types/InventoryItemDto";
 
@@ -10,11 +10,13 @@ const TIER_STYLE: Record<TreatTier, { ring: string; icon: string }> = {
 
 interface SnackCardProps {
   item: InventoryItemDto;
+  isFeeding?: boolean;
+  disabled?: boolean; // another treat is being fed
   onFeed: () => void;
   onShop: () => void;
 }
 
-function SnackCard({ item, onFeed, onShop }: SnackCardProps) {
+function SnackCard({ item, isFeeding = false, disabled = false, onFeed, onShop }: SnackCardProps) {
   const { treatDto: treat, quantity } = item;
   const style = TIER_STYLE[treat.treatTier];
   const isEmpty = quantity <= 0;
@@ -47,9 +49,10 @@ function SnackCard({ item, onFeed, onShop }: SnackCardProps) {
       ) : (
         <button
           onClick={onFeed}
-          className="mt-3 w-full rounded-full bg-emerald-800 py-1.5 text-xs font-semibold text-white hover:bg-emerald-900"
+          disabled={isFeeding || disabled}
+          className="mt-3 flex w-full items-center justify-center rounded-full bg-emerald-800 py-1.5 text-xs font-semibold text-white hover:bg-emerald-900 disabled:opacity-50"
         >
-          Feed
+          {isFeeding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Feed"}
         </button>
       )}
     </div>
