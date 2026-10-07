@@ -3,6 +3,8 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import BottomNavigation from "../components/BottomNavigation/BottomNavigation";
 import UserProfileCard from "../components/UserProfileCard/UserProfileCard";
 import { BOTTOM_NAV_TOTAL_HEIGHT } from "../constants/layout";
+import { useTasks } from "../context/TaskContext";
+import { TaskCompleteOverlay } from "../components/TaskCompleteOverlay/TaskCompleteOverlay";
 
 const swipeRoutes = ["/", "/sanctuary", "/calendar", "/shop"];
 const NAV_SWIPE_THRESHOLD = 60;
@@ -11,6 +13,9 @@ const NAV_SWIPE_VELOCITY = 500;
 function MainLayout() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { completion, dismissCompletion } = useTasks();
+
+    console.log("MainLayout completion:", completion);
     const currentIndex = swipeRoutes.indexOf(location.pathname);
 
     const goToPreviousPage = () => {
@@ -48,6 +53,10 @@ function MainLayout() {
             </motion.main>
 
             <BottomNavigation onAddTask={() => navigate("/tasks/new")} />
+
+            {completion && (
+                <TaskCompleteOverlay key={completion.id} completion={completion} onDismiss={dismissCompletion} />
+            )}
         </div>
     );
 }

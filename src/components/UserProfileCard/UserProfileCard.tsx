@@ -18,7 +18,7 @@ function UserProfileCard() {
     isLoading,
   } = useSanctuary();
 
-  const { activeTask } = useTasks();
+  const { activeTask, isCelebrationPending } = useTasks();
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -29,7 +29,7 @@ function UserProfileCard() {
 
   // Only ever display the oldest queued event — if two level-ups land close
   // together, the second waits its turn rather than overlapping.
-  const activeLevelUp = levelUpEvents[0];
+  const activeLevelUp = isCelebrationPending ? undefined : levelUpEvents[0];
 
   return (
     <>
@@ -37,6 +37,7 @@ function UserProfileCard() {
         <LevelUpOverlay
           key={activeLevelUp.id}
           level={activeLevelUp.newLevel}
+          previousLevel={activeLevelUp.previousLevel}
           onDismiss={() => clearLevelUp(activeLevelUp.id)}
         />
       )}

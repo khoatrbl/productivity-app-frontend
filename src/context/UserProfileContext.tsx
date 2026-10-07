@@ -27,6 +27,7 @@ interface CoinGain {
 interface LevelUpEvent {
   id: string;
   newLevel: number;
+  previousLevel: number;
 }
 
 interface UserProfileContextValue extends UserProfileState {
@@ -113,7 +114,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     // happened — this also correctly handles jumping multiple levels in one
     // grant (still just one celebration, for the final level reached).
     if (newLevel > previousLevel) {
-      setLevelUpEvents((prev) => [...prev, { id: crypto.randomUUID(), newLevel }]);
+      setLevelUpEvents((prev) => [...prev, { id: crypto.randomUUID(), newLevel, previousLevel }]);
     }
   }, []);
 

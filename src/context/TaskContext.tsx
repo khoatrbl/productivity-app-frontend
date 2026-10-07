@@ -6,6 +6,14 @@ import { useSanctuary } from "./UserProfileContext";
 import type { UpdateTaskRequest } from "../types/UpdateTaskRequest";
 import type { CreateTaskRequest } from "../types/CreateTaskRequest";
 
+export interface TaskCompletion {
+  id: string;
+  title: string;
+  expGained: number;
+  coinsGained: number;
+  bonusPets: number; // 0 for now; filled in when tasks can grant bonus pets
+}
+
 interface TaskContextValue {
   tasks: TaskDto[];
   visibleTasks: TaskDto[];
@@ -22,6 +30,9 @@ interface TaskContextValue {
   handleDelete: (taskId: string) => void;
   handleUpdate: (taskId: string, payload: UpdateTaskRequest) => Promise<TaskDto | null>;
   handleCreate: (payload: CreateTaskRequest) => Promise<TaskDto | null>;
+  completion: TaskCompletion | null;
+  dismissCompletion: () => void;
+  isCelebrationPending: boolean; // a finish is in progress or its overlay is open
 }
 
 const TaskContext = createContext<TaskContextValue | null>(null);
@@ -32,6 +43,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [taskStartTimes, setTaskStartTimes] = useState<Record<string, number>>({});
   const { addExp, addCoins, claimStartTaskReward } = useSanctuary();
+  const [completion, setCompletion] = useState<TaskCompletion | null>(null);
+  const [isFinishing, setIsFinishing] = useState(false);
 
   useEffect(() => {
     getTasks()
@@ -90,13 +103,37 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   }
 
   async function handleFinish(task: TaskDto) {
+    setIsFinishing(true);
     try {
-      const updated = await updateStatus(task.taskId, TaskStatus.COMPLETE);
+      let updated: TaskDto | null = null;
+      try {
+        updated = await updateStatus(task.taskId, TaskStatus.COMPLETE);
+      } catch (err) {
+        console.error("Failed to finish task:", err);
+        return;
+      }
       if (!updated) return;
-      await addExp(task.totalExp);
-      await addCoins(task.totalCoins);
-    } catch (err) {
-      console.error("Failed to finish task:", err);
+
+      try {
+        await addExp(task.totalExp);
+      } catch (err) {
+        console.error("Failed to add EXP:", err);
+      }
+      try {
+        await addCoins(task.totalCoins);
+      } catch (err) {
+        console.error("Failed to add coins:", err);
+      }
+
+      setCompletion({
+        id: crypto.randomUUID(),
+        title: task.title,
+        expGained: task.totalExp,
+        coinsGained: task.totalCoins,
+        bonusPets: 0,
+      });
+    } finally {
+      setIsFinishing(false);
     }
   }
 
@@ -173,6 +210,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         handleFinish,
         toggleSubtask,
         handleDelete,
+        completion,
+        dismissCompletion: () => setCompletion(null),
+        isCelebrationPending: isFinishing || completion !== null,
       }}
     >
       {children}
