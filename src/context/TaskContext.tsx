@@ -5,6 +5,7 @@ import { createTask, deleteTask, getTasks, updateTask, updateTaskStatus } from "
 import { useSanctuary } from "./UserProfileContext";
 import type { UpdateTaskRequest } from "../types/UpdateTaskRequest";
 import type { CreateTaskRequest } from "../types/CreateTaskRequest";
+import { usePet } from "./PetContext";
 
 export interface TaskCompletion {
   id: string;
@@ -45,6 +46,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const { addExp, addCoins, claimStartTaskReward } = useSanctuary();
   const [completion, setCompletion] = useState<TaskCompletion | null>(null);
   const [isFinishing, setIsFinishing] = useState(false);
+  const { refreshPet } = usePet();
 
   useEffect(() => {
     getTasks()
@@ -125,12 +127,21 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         console.error("Failed to add coins:", err);
       }
 
+      const bonusPets = updated.bonusPetsGranted ?? 0;
+      if (bonusPets > 0) {
+        try {
+          await refreshPet(); // the Sanctuary picks up the new bonus pets and stream
+        } catch (err) {
+          console.error("Failed to refresh pet:", err);
+        }
+      }
+
       setCompletion({
         id: crypto.randomUUID(),
         title: task.title,
         expGained: task.totalExp,
         coinsGained: task.totalCoins,
-        bonusPets: 0,
+        bonusPets,
       });
     } finally {
       setIsFinishing(false);

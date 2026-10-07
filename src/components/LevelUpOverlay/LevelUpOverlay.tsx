@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import dancingCapybara from "../../assets/capybara-dancing.gif"
 import { ItemType } from "../../types/ItemType";
 import { Crown, Footprints, Shirt, Unlock, type LucideIcon } from "lucide-react";
 import { getShopItems } from "../../services/shopServices";
 import { useNavigate } from "react-router-dom";
 import type { ShopItemsDto } from "../../types/ShopItemsDto";
+import { getShopItemsCached, getShopItemsSnapshot } from "../../services/shopServices";
+import UnlocksSkeleton from "./UnlocksSkeleton";
 
 interface LevelUpOverlayProps {
   level: number;
@@ -52,23 +54,30 @@ function generateConfetti(count: number): ConfettiPiece[] {
   });
 }
 
+function pickUnlocks(items: ShopItemsDto[], previousLevel: number, level: number) {
+  return items
+    .filter((i) => i.requiredUserLevel > previousLevel && i.requiredUserLevel <= level)
+    .sort((a, b) => a.price - b.price);
+}
+
 export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismiss }: LevelUpOverlayProps) {
   const navigate = useNavigate();
   const confetti = useMemo(() => generateConfetti(36), []);
-  const [unlocks, setUnlocks] = useState<ShopItemsDto[] | null>(null); // null = still loading
+  const [unlocks, setUnlocks] = useState<ShopItemsDto[] | null>(() => {
+    const snapshot = getShopItemsSnapshot();
+    return snapshot ? pickUnlocks(snapshot, previousLevel, level) : null; // null = loading
+  });
 
-  // Items whose required level is in (previousLevel, level]
   useEffect(() => {
-    getShopItems()
-      .then((items) =>
-        setUnlocks(
-          items
-            .filter((i) => i.requiredUserLevel > previousLevel && i.requiredUserLevel <= level)
-            .sort((a, b) => a.price - b.price)
-        )
-      )
-      .catch(() => setUnlocks([]));
-  }, [level, previousLevel]);
+    if (unlocks !== null) return; // already known from the cache
+    let cancelled = false;
+    getShopItemsCached()
+      .then((items) => !cancelled && setUnlocks(pickUnlocks(items, previousLevel, level)))
+      .catch(() => !cancelled && setUnlocks([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [unlocks, level, previousLevel]);
 
   // Only auto-close when there's nothing new to show
   useEffect(() => {
@@ -160,43 +169,57 @@ export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismis
         <p className="relative mt-2 text-center text-2xl font-bold text-emerald-900">You have reached Lv.{level}!</p>
 
         {/* New in the shop: only when this level unlocked something */}
-        {unlocks && unlocks.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="relative mt-4 w-full rounded-2xl border border-amber-200 bg-white/80 p-3 text-left"
-          >
-            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-amber-700">
-              <Unlock className="h-3.5 w-3.5" /> New in the shop
-            </p>
-
-            <ul className="mt-2 space-y-1.5">
-              {unlocks.slice(0, MAX_LISTED).map((item) => {
-                const Icon = TYPE_ICON[item.itemType];
-                return (
-                  <li key={item.id} className="flex items-center gap-2 text-sm">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-50">
-                      <Icon className="h-4 w-4 text-amber-600" />
-                    </span>
-                    <span className="truncate font-medium text-gray-800">{item.name}</span>
-                  </li>
-                );
-              })}
-            </ul>
-
-            {unlocks.length > MAX_LISTED && (
-              <p className="mt-1.5 text-xs text-gray-400">+{unlocks.length - MAX_LISTED} more</p>
-            )}
-
-            <button
-              onClick={goToShop}
-              className="mt-3 w-full rounded-full bg-[#FFB780] py-2 text-sm font-bold text-[#7C3F1D] transition-colors hover:bg-[#FFAB6B]"
+        <AnimatePresence mode="wait" initial={false}>
+          {unlocks === null ? (
+            <motion.div
+              key="unlocks-skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              transition={{ duration: 0.25 }}
+              className="relative mt-4 w-full overflow-hidden"
             >
-              Take a look
-            </button>
-          </motion.div>
-        )}
+              <UnlocksSkeleton />
+            </motion.div>
+          ) : unlocks.length > 0 ? (
+            <motion.div
+              key="unlocks"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="relative mt-4 w-full rounded-2xl border border-amber-200 bg-white/80 p-3 text-left"
+            >
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-amber-700">
+                <Unlock className="h-3.5 w-3.5" /> New in the shop
+              </p>
+
+              <ul className="mt-2 space-y-1.5">
+                {unlocks.slice(0, MAX_LISTED).map((item) => {
+                  const Icon = TYPE_ICON[item.itemType];
+                  return (
+                    <li key={item.id} className="flex items-center gap-2 text-sm">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-50">
+                        <Icon className="h-4 w-4 text-amber-600" />
+                      </span>
+                      <span className="truncate font-medium text-gray-800">{item.name}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {unlocks.length > MAX_LISTED && (
+                <p className="mt-1.5 text-xs text-gray-400">+{unlocks.length - MAX_LISTED} more</p>
+              )}
+
+              <button
+                onClick={goToShop}
+                className="mt-3 w-full rounded-full bg-[#FFB780] py-2 text-sm font-bold text-[#7C3F1D] transition-colors hover:bg-[#FFAB6B]"
+              >
+                Take a look
+              </button>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
 
         <p className="relative mt-2 text-xs text-gray-400">Tap anywhere to continue</p>
       </motion.div>

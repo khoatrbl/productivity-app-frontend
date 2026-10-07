@@ -5,6 +5,8 @@ import UserProfileCard from "../components/UserProfileCard/UserProfileCard";
 import { BOTTOM_NAV_TOTAL_HEIGHT } from "../constants/layout";
 import { useTasks } from "../context/TaskContext";
 import { TaskCompleteOverlay } from "../components/TaskCompleteOverlay/TaskCompleteOverlay";
+import { useEffect } from "react";
+import { prefetchShopItems } from "../services/shopServices";
 
 const swipeRoutes = ["/", "/sanctuary", "/calendar", "/shop"];
 const NAV_SWIPE_THRESHOLD = 60;
@@ -15,8 +17,11 @@ function MainLayout() {
     const location = useLocation();
     const { completion, dismissCompletion } = useTasks();
 
-    console.log("MainLayout completion:", completion);
     const currentIndex = swipeRoutes.indexOf(location.pathname);
+
+    useEffect(() => {
+        prefetchShopItems();
+    }, []);
 
     const goToPreviousPage = () => {
         const previousIndex = (currentIndex - 1 + swipeRoutes.length) % swipeRoutes.length;

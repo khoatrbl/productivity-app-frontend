@@ -129,7 +129,9 @@ function Sanctuary() {
         <PetStage
           petName={pet.name}
           canPet={care.canPet}
-          petsLeft={care.petsLeft}
+          windowPets={care.windowPets}
+          bonusPets={care.bonusPets}
+          isNapping={care.isNapping}
           cooldownMsLeft={care.cooldownMsLeft}
           isAffectionMaxed={care.isAffectionMaxed}
           onPet={care.pet}

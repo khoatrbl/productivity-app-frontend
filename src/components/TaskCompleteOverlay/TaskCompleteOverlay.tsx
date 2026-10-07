@@ -84,61 +84,58 @@ export function TaskCompleteOverlay({ completion, onDismiss }: TaskCompleteOverl
 
         {/* Rewards */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          className="mt-3 rounded-2xl bg-[#F3EEE6] p-4 text-left"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="mt-3 rounded-2xl bg-[#F3EEE6] p-4 text-left"
         >
-          <p className="font-semibold text-gray-800">Rewards claimed</p>
+        <p className="font-semibold text-gray-800">Rewards claimed</p>
 
-          {/* User EXP */}
-          <div className="mt-3 flex items-center justify-between text-sm">
-            <span className="flex items-center gap-1.5 font-medium text-gray-700">
-              <Sparkles className="h-4 w-4 text-amber-500" /> Your EXP
-            </span>
-            <span className="font-bold text-gray-900">+{completion.expGained} EXP</span>
-          </div>
-          <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-white">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
-              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-400"
+        {/* Reward tiles: XP, Citrus, and bonus pets when granted */}
+        <div className={`mt-3 grid gap-2 ${completion.bonusPets > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
+            <RewardTile
+            icon={<Sparkles className="h-4 w-4 text-amber-500" />}
+            iconBg="bg-amber-100"
+            label="EXP"
+            value={`+${completion.expGained}`}
+            delay={0.55}
             />
-          </div>
-          <div className="mt-1.5 flex justify-between text-xs text-gray-400">
+            <RewardTile
+            icon={<Citrus className="h-4 w-4 text-[#F48C42]" />}
+            iconBg="bg-orange-100"
+            label="Citrus"
+            value={`+${completion.coinsGained}`}
+            delay={0.65}
+            />
+            {completion.bonusPets > 0 && (
+            <RewardTile
+                icon={<PawPrint className="h-4 w-4 text-rose-500" />}
+                iconBg="bg-rose-100"
+                label="Bonus pets"
+                value={`+${completion.bonusPets}`}
+                delay={0.75}
+                highlight
+            />
+            )}
+        </div>
+
+        {/* Level progress */}
+        <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-white">
+            <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
+            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-400"
+            />
+        </div>
+        <div className="mt-1.5 flex justify-between text-xs text-gray-400">
             <span>{exp} / {maxExp} XP</span>
             {leveledUp ? (
-              <span className="font-bold text-emerald-700">Level up! Lv. {level}</span>
+            <span className="font-bold text-emerald-700">Level up! Lv. {level}</span>
             ) : (
-              <span>{progress}% to Lv. {level + 1}</span>
+            <span>{progress}% to Lv. {level + 1}</span>
             )}
-          </div>
-
-          {/* Tiles */}
-          <div className={`mt-3 grid gap-2 ${completion.bonusPets > 0 ? "grid-cols-2" : "grid-cols-1"}`}>
-            <div className="flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100">
-                <Citrus className="h-4 w-4 text-[#F48C42]" />
-              </span>
-              <div>
-                <p className="text-[11px] text-gray-400">Citrus</p>
-                <p className="text-sm font-bold text-gray-900">+{completion.coinsGained}</p>
-              </div>
-            </div>
-
-            {completion.bonusPets > 0 && (
-              <div className="flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-100">
-                  <PawPrint className="h-4 w-4 text-rose-500" />
-                </span>
-                <div>
-                  <p className="text-[11px] text-gray-400">Bonus pets</p>
-                  <p className="text-sm font-bold text-gray-900">+{completion.bonusPets}</p>
-                </div>
-              </div>
-            )}
-          </div>
+        </div>
         </motion.div>
 
         {/* Actions */}
@@ -157,5 +154,31 @@ export function TaskCompleteOverlay({ completion, onDismiss }: TaskCompleteOverl
       </motion.div>
     </div>,
     document.body
+  );
+}
+
+interface RewardTileProps {
+  icon: React.ReactNode;
+  iconBg: string;
+  label: string;
+  value: string;
+  delay: number;
+  highlight?: boolean;
+}
+
+function RewardTile({ icon, iconBg, label, value, delay, highlight = false }: RewardTileProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay, type: "spring", stiffness: 380, damping: 18 }}
+      className={`flex flex-col items-center gap-1 rounded-xl bg-white px-2 py-2.5 text-center ${
+        highlight ? "ring-2 ring-rose-200" : ""
+      }`}
+    >
+      <span className={`flex h-8 w-8 items-center justify-center rounded-full ${iconBg}`}>{icon}</span>
+      <p className="text-[11px] leading-tight text-gray-400">{label}</p>
+      <p className="text-sm font-bold text-gray-900">{value}</p>
+    </motion.div>
   );
 }
