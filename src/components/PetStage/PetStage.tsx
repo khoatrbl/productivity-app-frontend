@@ -10,7 +10,7 @@ interface PetStageProps {
   petsLeft: number;
   cooldownMsLeft: number;
   isAffectionMaxed: boolean;
-  onPet: () => Promise<PetResult>;
+  onPet: () => PetResult;
 }
 
 function formatCooldown(ms: number) {
@@ -25,23 +25,28 @@ function PetStage({ petName, canPet, petsLeft, cooldownMsLeft, isAffectionMaxed,
   const controls = useAnimationControls();
   const [hearts, setHearts] = useState<{ id: string; x: number; amount: number }[]>([]);
 
-  async function handleTap() {
-    // Squish right away so the tap feels instant
-    controls.start({ scaleY: [1, 0.9, 1.05, 1], scaleX: [1, 1.08, 0.97, 1], transition: { duration: 0.4 } });
-
-    const result = await onPet();
-    if (!result.ok) {
-      if (result.reason !== "busy") {
-        controls.start({ x: [0, -4, 4, -2, 0], transition: { duration: 0.3 } });
-      }
-      return;
-    }
-
+  function spawnHeart(amount: number) {
+    if (amount <= 0) return;
     const id = crypto.randomUUID();
-    setHearts((h) => [...h, { id, x: Math.random() * 60 - 30, amount: result.gained }]);
+    setHearts((h) => [...h, { id, x: Math.random() * 60 - 30, amount }]);
     setTimeout(() => setHearts((h) => h.filter((x) => x.id !== id)), 900);
   }
 
+  function handleTap() {
+    const result = onPet();
+    if (!result.ok) {
+      controls.start({ x: [0, -4, 4, -2, 0], transition: { duration: 0.3 } });
+      return;
+    }
+
+    controls.start({ scaleY: [1, 0.9, 1.05, 1], scaleX: [1, 1.08, 0.97, 1], transition: { duration: 0.4 } });
+
+    if (result.pendingGain) {
+      result.pendingGain.then(spawnHeart); // the real value, a moment later
+    } else {
+      spawnHeart(result.gained);           // known in advance: instant
+    }
+  }
   let status: string;
   if (isAffectionMaxed) status = `${petName} feels completely loved`;
   else if (cooldownMsLeft > 0) status = `${petName} is napping · ${formatCooldown(cooldownMsLeft)}`;

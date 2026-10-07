@@ -11,6 +11,7 @@ interface PetContextValue {
   syncPet: (pet: PetDto) => void;
   addPetItem: (item: PetItemDto) => void;
   refreshPet: () => Promise<void>;
+  updatePet: (fn: (prev: PetDto) => PetDto) => void;
 }
 
 const PetContext = createContext<PetContextValue | null>(null);
@@ -66,8 +67,12 @@ export function PetProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const updatePet = useCallback((fn: (prev: PetDto) => PetDto) => {
+    setPet((prev) => (prev ? fn(prev) : prev));
+  }, []);
+
   return (
-    <PetContext.Provider value={{ pet, isLoading, error, renamePet, syncPet, addPetItem, refreshPet }}>
+    <PetContext.Provider value={{ pet, isLoading, error, renamePet, syncPet, addPetItem, refreshPet, updatePet }}>
       {children}
     </PetContext.Provider>
   );

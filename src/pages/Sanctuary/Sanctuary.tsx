@@ -54,6 +54,13 @@ function Sanctuary() {
     return () => clearTimeout(id);
   }, [notice]);
 
+  useEffect(() => {
+    if (care.petError) {
+      setNotice({ kind: "error", text: care.petError });
+      care.clearPetError();
+    }
+  }, [care.petError]);
+
   async function handleFeed(entry: InventoryItemDto) {
     const treat = entry.treatDto;
     if (feedingId || entry.quantity <= 0) return;

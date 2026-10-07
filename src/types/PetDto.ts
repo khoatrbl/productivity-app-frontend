@@ -20,7 +20,9 @@ export interface PetDto {
   name: string;
   petCurrentExp: number;
   petCurrentAffectionPoint: number;
+  upcomingAffectionGains: number[];
   pettingsLeft: number;
+  bonusPets: number;
   petCooldownUntil: string | null; // ISO instant
   items: PetItemDto[];
 }
