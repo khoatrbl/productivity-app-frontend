@@ -5,7 +5,7 @@ import { useTasks } from "../../context/TaskContext";
 import SwipeActions from "../SwipeActions/SwipeActions";
 import { useNavigate } from "react-router-dom";
 import type { PriorityFilter } from "../PriorityFilterTabs/PriorityFilterTabs";
-import { sortByCreatedAt, sortByPriorityThenCreated } from "../../utils/taskSort";
+import { activeFirst, sortByCreatedAt, sortByPriorityThenCreated } from "../../utils/taskSort";
 import { useMemo } from "react";
 
 import restingCapybara from "../../assets/resting_capybara.png"
@@ -25,15 +25,17 @@ function TaskBoard({ priorityFilter }: TaskBoardProps) {
 
   const displayedTasks = useMemo(() => {
     if (priorityFilter === "HIGH_URGENT") {
-      return sortByPriorityThenCreated(visibleTasks.filter((t) => t.priority === "URGENT" || t.priority === "HIGH"));
+      return activeFirst(
+        sortByPriorityThenCreated(visibleTasks.filter((t) => t.priority === "URGENT" || t.priority === "HIGH"))
+      );
     }
     if (priorityFilter === "MEDIUM") {
-      return sortByCreatedAt(visibleTasks.filter((t) => t.priority === "MEDIUM"));
+      return activeFirst(sortByCreatedAt(visibleTasks.filter((t) => t.priority === "MEDIUM")));
     }
     if (priorityFilter === "LOW") {
-      return sortByCreatedAt(visibleTasks.filter((t) => t.priority === "LOW"));
+      return activeFirst(sortByCreatedAt(visibleTasks.filter((t) => t.priority === "LOW")));
     }
-    return sortByCreatedAt(visibleTasks); // ALL
+    return activeFirst(sortByPriorityThenCreated(visibleTasks)); // ALL
   }, [visibleTasks, priorityFilter]);
 
   if (isLoading) {
