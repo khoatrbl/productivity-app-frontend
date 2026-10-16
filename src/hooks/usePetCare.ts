@@ -6,7 +6,7 @@ import type { PetDto, PetItemDto } from "../types/PetDto";
 
 const MAX_AFFECTION = 100;
 const PETTINGS_PER_WINDOW = 5;          // must match the backend
-const PET_COOLDOWN_MS = 30 * 60 * 1000; // must match the backend
+const PET_COOLDOWN_MS = 60 * 60 * 1000; // must match the backend
 
 export type PetResult =
   | { ok: true; gained: number; pendingGain?: undefined }

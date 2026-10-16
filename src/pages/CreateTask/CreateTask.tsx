@@ -13,6 +13,7 @@ import { useTasks } from "../../context/TaskContext";
 import { useSanctuary } from "../../context/UserProfileContext";
 import defaultAvatar from "../../assets/angry_capybara_working.jpg"
 import capyCozyTip from "../../assets/capy_cozy_tip.png"
+import appLogo from "../../assets/capydo-logo-512x512.png"
 
 function formatLocalDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -72,7 +73,7 @@ function CreateTask() {
         </button>
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-sm">
-            🦫
+            <img src={appLogo} className="h-full w-full rounded-full object-cover"/>
           </div>
           <p className="text-base font-bold text-gray-900">New Quest</p>
         </div>
