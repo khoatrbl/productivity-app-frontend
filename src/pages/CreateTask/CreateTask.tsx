@@ -61,7 +61,7 @@ function CreateTask() {
     if (created) {
       navigate(navState?.returnTo ?? "/");
     } else {
-      setError("Couldn't create the task — try again.");
+      setError("Couldn't create the task — Due date or due time is invalid.");
     }
   }
 

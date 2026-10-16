@@ -66,7 +66,7 @@ function Dashboard() {
                     <PriorityFilterTabs tasks={visibleTasks} value={priorityFilter} onChange={setPriorityFilter} />
                 )}
 
-                {view === "focus" ? <FocusSession /> : <TaskBoard priorityFilter={priorityFilter} />}
+                {view === "focus" ? <FocusSession /> : <TaskBoard priorityFilter={priorityFilter} onPriorityFilterChange={setPriorityFilter} />}
             </div>
         </>
     );
