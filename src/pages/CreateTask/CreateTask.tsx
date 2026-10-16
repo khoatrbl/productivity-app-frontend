@@ -1,6 +1,7 @@
 // pages/CreateTask/CreateTask.tsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { fromDateKey, toDateKey } from "../../utils/calendar";
 import { Sparkles, Coins, ChevronLeft } from "lucide-react";
 import PrioritySelector from "../../components/CreateTask/PrioritySelector";
 import DueDateSection from "../../components/CreateTask/DueDateSection";
@@ -15,18 +16,18 @@ import defaultAvatar from "../../assets/angry_capybara_working.jpg"
 import capyCozyTip from "../../assets/capy_cozy_tip.png"
 import appLogo from "../../assets/capydo-logo-512x512.png"
 
-function formatLocalDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 function CreateTask() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navState = location.state as { dueDate?: string; returnTo?: string } | null;
   const { handleCreate } = useTasks();
   const { avatarUrl } = useSanctuary();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("MEDIUM");
-  const [dueDate, setDueDate] = useState(() => new Date());
+  const [dueDate, setDueDate] = useState<Date>(() =>
+    navState?.dueDate ? fromDateKey(navState.dueDate) : new Date()
+  );
   const [hour24, setHour24] = useState(18);
   const [minute, setMinute] = useState(0);
   const [sprintInMinutes, setSprintInMinutes] = useState(20);
@@ -36,7 +37,7 @@ function CreateTask() {
 
   const { estimate, isLoading: isEstimating, isReady } = useRewardEstimate(title, priority, steps.length);
 
-    async function handleSubmit() {
+  async function handleSubmit() {
     if (!title.trim()) {
       setError("Give your quest a title first.");
       return;
@@ -47,7 +48,7 @@ function CreateTask() {
     const created = await handleCreate({
       title: title.trim(),
       description: description.trim() || "",
-      dueDate: formatLocalDate(dueDate),
+      dueDate: toDateKey(dueDate),
       dueTime: `${String(hour24).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`,
       priority,
       sprintInMinutes,
@@ -58,7 +59,7 @@ function CreateTask() {
 
     setIsSubmitting(false);
     if (created) {
-      navigate("/");
+      navigate(navState?.returnTo ?? "/");
     } else {
       setError("Couldn't create the task — try again.");
     }
