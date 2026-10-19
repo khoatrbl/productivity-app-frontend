@@ -25,11 +25,16 @@ function CreateTask() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("MEDIUM");
+  const [initial] = useState(() => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + 15); // carries into the hour (and day) automatically
+    return d;
+  });
   const [dueDate, setDueDate] = useState<Date>(() =>
-    navState?.dueDate ? fromDateKey(navState.dueDate) : new Date()
+    navState?.dueDate ? fromDateKey(navState.dueDate) : initial
   );
-  const [hour24, setHour24] = useState(18);
-  const [minute, setMinute] = useState(0);
+  const [hour24, setHour24] = useState(initial.getHours());
+  const [minute, setMinute] = useState(initial.getMinutes());
   const [sprintInMinutes, setSprintInMinutes] = useState(20);
   const [steps, setSteps] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
