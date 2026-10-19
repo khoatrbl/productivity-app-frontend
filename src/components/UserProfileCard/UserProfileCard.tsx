@@ -1,7 +1,7 @@
 import { Award, Citrus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSanctuary } from "../../context/UserProfileContext";
+import { useUserProfileContext } from "../../context/UserProfileContext";
 import { useTasks } from "../../context/TaskContext";
 import appLogo from "../../assets/capydo-logo-512x512.png";
 import defaultAvatar from "../../assets/angry_capybara_working.jpg";
@@ -16,7 +16,7 @@ function UserProfileCard() {
     recentCoinGains, clearCoinGain,
     levelUpEvents, clearLevelUp,
     isLoading,
-  } = useSanctuary();
+  } = useUserProfileContext();
 
   const { activeTask, isCelebrationPending } = useTasks();
   const navigate = useNavigate();

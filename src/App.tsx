@@ -30,13 +30,13 @@ function App() {
               <Route path="/onboarding/name-pet" element={<NamePet />} />
               <Route path="/tasks/new" element={<CreateTask />} />
               <Route path="/tasks/:taskId/edit" element={<EditTask />} />
+              <Route path="/settings" element={<Settings/>}/>
 
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Dashboard/>}/>
                 <Route path="/sanctuary" element={<Sanctuary/>}/>
                 <Route path="/calendar" element={<Calendar/>}/>
                 <Route path="/shop" element={<Shop/>}/>
-                <Route path="/settings" element={<Settings/>}/>
               </Route>
             </Route>
           </Routes>

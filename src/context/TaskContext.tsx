@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { TaskDto } from "../types/TaskCardData";
 import { TaskStatus } from "../types/TaskStatus";
 import { createTask, deleteTask, getTasks, updateTask, updateTaskStatus } from "../services/taskServices";
-import { useSanctuary } from "./UserProfileContext";
+import { useUserProfileContext } from "./UserProfileContext";
 import type { UpdateTaskRequest } from "../types/UpdateTaskRequest";
 import type { CreateTaskRequest } from "../types/CreateTaskRequest";
 import { usePet } from "./PetContext";
@@ -43,7 +43,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [taskStartTimes, setTaskStartTimes] = useState<Record<string, number>>({});
-  const { addExp, addCoins, claimStartTaskReward } = useSanctuary();
+  const { addExp, addCoins, claimStartTaskReward } = useUserProfileContext();
   const [completion, setCompletion] = useState<TaskCompletion | null>(null);
   const [isFinishing, setIsFinishing] = useState(false);
   const { refreshPet } = usePet();

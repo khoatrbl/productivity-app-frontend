@@ -6,7 +6,7 @@ import TaskBoard from "../../components/TaskBoard/TaskBoard";
 import FocusSession from "../../components/FocusSession/FocusSession";
 import ViewToggle, { type DashboardView } from "../../components/ViewToggle/ViewToggle";
 import { useTasks } from "../../context/TaskContext";
-import { useSanctuary } from "../../context/UserProfileContext";
+import { useUserProfileContext } from "../../context/UserProfileContext";
 import type { DailyQuoteData } from "../../types/DailyQuoteData";
 import PriorityFilterTabs, { type PriorityFilter } from "../../components/PriorityFilterTabs/PriorityFilterTabs";
 
@@ -15,7 +15,7 @@ function Dashboard() {
     const [phase, setPhase] = useState<"intro" | "card">(showIntro ? "intro" : "card");
     const [view, setView] = useState<DashboardView>("list");
     const { activeTask, visibleTasks } = useTasks();
-    const { claimQuoteReward } = useSanctuary();
+    const { claimQuoteReward } = useUserProfileContext();
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
     const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("ALL");
     

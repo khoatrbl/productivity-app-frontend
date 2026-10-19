@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Cookie, Crown, Footprints, Shirt, type LucideIcon } from "lucide-react";
 import { ApiError } from "../../lib/apiClient";
 import { getShopItems, purchaseShopItem, purchaseTreat } from "../../services/shopServices";
-import { useSanctuary } from "../../context/UserProfileContext";
+import { useUserProfileContext } from "../../context/UserProfileContext";
 import { usePet } from "../../context/PetContext";
 import { useInventory } from "../../context/InventoryContext";
 import { ItemType } from "../../types/ItemType";
@@ -54,7 +54,7 @@ function CardGridSkeleton({ count }: { count: number }) {
 }
 
 function Shop() {
-  const { level: userLevel, coins, syncCoins } = useSanctuary();
+  const { level: userLevel, coins, syncCoins } = useUserProfileContext();
   const { pet, addPetItem } = usePet();
   const inventory = useInventory();
 

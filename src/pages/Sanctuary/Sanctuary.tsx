@@ -14,7 +14,7 @@ import type { PetFeedResponse } from "../../types/PetFeedResponse";
 import { feedPet } from "../../services/petServices";
 import { ApiError } from "../../lib/apiClient";
 import { AnimatePresence, motion } from "framer-motion";
-import { useSanctuary } from "../../context/UserProfileContext";
+import { useUserProfileContext } from "../../context/UserProfileContext";
 import type { PetFortuneDto } from "../../types/PetFortuneDto";
 import { PetLevelUpOverlay } from "../../components/PetLevelUpOverlay.tsx/PetLevelUpOverlay";
 
@@ -35,7 +35,7 @@ function Sanctuary() {
   const [xpPop, setXpPop] = useState<{ id: string; amount: number } | null>(null);
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
-  const { syncCoins } = useSanctuary();
+  const { syncCoins } = useUserProfileContext();
   const [levelUp, setLevelUp] = useState<{
     id: string;
     fromLevel: number;

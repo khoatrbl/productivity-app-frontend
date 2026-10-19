@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Check, Citrus, Heart, PawPrint, Sparkles, Trophy } from "lucide-react";
-import { useSanctuary } from "../../context/UserProfileContext";
+import { useUserProfileContext } from "../../context/UserProfileContext";
 import { usePet } from "../../context/PetContext";
 import type { TaskCompletion } from "../../context/TaskContext";
 import petAvatar from "../../assets/chilling_capybara.png"; // placeholder avatar
@@ -14,7 +14,7 @@ interface TaskCompleteOverlayProps {
 
 export function TaskCompleteOverlay({ completion, onDismiss }: TaskCompleteOverlayProps) {
   const navigate = useNavigate();
-  const { level, exp, maxExp, levelUpEvents } = useSanctuary();
+  const { level, exp, maxExp, levelUpEvents } = useUserProfileContext();
   const { pet } = usePet();
 
   const leveledUp = levelUpEvents.length > 0;

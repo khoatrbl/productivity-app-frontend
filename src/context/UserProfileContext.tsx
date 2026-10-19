@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { getProfile, addExp as addExpBackend, addCoins as addCoinsBackend } from "../services/userProfileServices";
+import { getProfile, updateUserProfile, addExp as addExpBackend, addCoins as addCoinsBackend } from "../services/userProfileServices";
 import { useAuth } from "./AuthContext";
 import { claimDailyQuote } from "../services/quoteServices";
 import { claimStartExpReward } from "../services/taskServices";
 
 interface UserProfileState {
   name: string;
+  email: string;
   subtitle: string;
   avatarUrl?: string;
   level: number;
@@ -44,11 +45,12 @@ interface UserProfileContextValue extends UserProfileState {
   claimQuoteReward: () => Promise<boolean>; // returns whether XP was actually granted
   claimStartTaskReward: (taskId: string) => Promise<boolean>; 
   syncCoins: (newCoins: number) => void;
+  updateDisplayName: (displayName: string) => Promise<void>;
 }
 
 const UserProfileContext = createContext<UserProfileContextValue | null>(null);
 
-const EMPTY_STATE: UserProfileState = { name: "", subtitle: "", level: 1, exp: 0, maxExp: 100, coins: 0 };
+const EMPTY_STATE: UserProfileState = { name: "", email: "", subtitle: "", level: 1, exp: 0, maxExp: 100, coins: 0 };
 const STATIC_SUBTITLE = "Keep growing!";
 
 export function UserProfileProvider({ children }: { children: ReactNode }) {
@@ -77,6 +79,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         if (cancelled) return;
         setState({
           name: profile.displayName,
+          email: profile.email,
           subtitle: STATIC_SUBTITLE,
           avatarUrl: undefined,
           level: profile.currentLevel.level,
@@ -95,6 +98,23 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
 
     return () => { cancelled = true; };
   }, [token]);
+
+  const updateDisplayName = useCallback(async (displayName: string) => {
+    const previousName = stateRef.current.name;
+
+    // 1. Optimistic: show it immediately everywhere (Settings + header card)
+    setState((prev) => ({ ...prev, name: displayName }));
+
+    try {
+      // 2. Reconcile with what the server actually stored (e.g. trimmed/normalized)
+      const res = await updateUserProfile(displayName);
+      setState((prev) => ({ ...prev, name: res.displayName }));
+    } catch (err) {
+      // 3. Roll back, then let the caller show the error
+      setState((prev) => ({ ...prev, name: previousName }));
+      throw err;
+    }
+  }, []);
 
   const addExp = useCallback(async (amount: number) => {
     const previousLevel = stateRef.current.level;
@@ -181,14 +201,14 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
 
   return (
     <UserProfileContext.Provider
-      value={{ ...state, isLoading, error, addExp, addCoins, claimQuoteReward, claimStartTaskReward, recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp, syncCoins }}
+      value={{ ...state, isLoading, error, addExp, addCoins, claimQuoteReward, claimStartTaskReward, recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp, syncCoins, updateDisplayName }}
     >
       {children}
     </UserProfileContext.Provider>
   );
 }
 
-export function useSanctuary() {
+export function useUserProfileContext() {
   const ctx = useContext(UserProfileContext);
   if (!ctx) throw new Error("useSanctuary must be used within a SanctuaryProvider");
   return ctx;

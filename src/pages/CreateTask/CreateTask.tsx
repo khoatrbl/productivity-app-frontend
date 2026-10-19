@@ -11,7 +11,7 @@ import MicroStepsEditor from "../../components/CreateTask/MicroStepsEditor";
 import { useRewardEstimate } from "../../hooks/useRewardEstimate";
 import type { TaskPriority } from "../../types/TaskPriority";
 import { useTasks } from "../../context/TaskContext";
-import { useSanctuary } from "../../context/UserProfileContext";
+import { useUserProfileContext } from "../../context/UserProfileContext";
 import defaultAvatar from "../../assets/angry_capybara_working.jpg"
 import capyCozyTip from "../../assets/capy_cozy_tip.png"
 import appLogo from "../../assets/capydo-logo-512x512.png"
@@ -21,7 +21,7 @@ function CreateTask() {
   const location = useLocation();
   const navState = location.state as { dueDate?: string; returnTo?: string } | null;
   const { handleCreate } = useTasks();
-  const { avatarUrl } = useSanctuary();
+  const { avatarUrl } = useUserProfileContext();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("MEDIUM");

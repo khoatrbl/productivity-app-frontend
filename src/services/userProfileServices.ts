@@ -2,6 +2,7 @@ import apiClient, { toApiError } from "../lib/apiClient";
 import type { CoinsDto } from "../types/CoinsDto";
 import type { ProfileDto } from "../types/UserProfile";
 import type { UpdateExpDto } from "../types/UpdateExpDto";
+import type { UpdateProfileResponse } from "../types/UpdateProfileResponse";
 
 export async function getProfile(): Promise<ProfileDto> {
   try {
@@ -29,5 +30,15 @@ export async function addCoins(amount: number): Promise<CoinsDto> {
         return data;
     } catch (error) {
         throw toApiError(error);    
+    }
+}
+
+export async function updateUserProfile(displayName: string): Promise<UpdateProfileResponse> {
+    try {
+        const {data} = await apiClient.patch<UpdateProfileResponse>("/me", {displayName: displayName});
+
+        return data;
+    } catch (error) {
+        throw toApiError(error);
     }
 }
