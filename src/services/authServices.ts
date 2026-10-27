@@ -16,9 +16,15 @@ export async function validateToken(): Promise<void> {
   await apiClient.get("/auth/validate"); // throws (via the response interceptor) if invalid
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse> {
+export async function login(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
   try {
-    const { data } = await apiClient.post<AuthResponse>("/auth/login", { email, password });
+    const { data } = await apiClient.post<AuthResponse>("/auth/login", {
+      email,
+      password,
+    });
     return data;
   } catch (error) {
     throw toApiError(error);
@@ -33,8 +39,36 @@ export async function register(payload: {
   timezone: string;
 }): Promise<AuthResponse> {
   try {
-    const { data } = await apiClient.post<AuthResponse>("/auth/register", payload);
+    const { data } = await apiClient.post<AuthResponse>(
+      "/auth/register",
+      payload,
+    );
     return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+let refreshInFlight: Promise<AuthResponse> | null = null;
+
+export async function refresh(): Promise<AuthResponse> {
+  if (!refreshInFlight) {
+    refreshInFlight = apiClient
+      .post<AuthResponse>("/auth/refresh")
+      .then(({ data }) => data)
+      .catch((error) => {
+        throw toApiError(error);
+      })
+      .finally(() => {
+        refreshInFlight = null;
+      });
+  }
+  return refreshInFlight;
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await apiClient.post("/auth/logout");
   } catch (error) {
     throw toApiError(error);
   }

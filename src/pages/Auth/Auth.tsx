@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, type  SubmitEvent} from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect, type SubmitEvent } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { LogIn, Smile, Eye, EyeOff, Rocket, Globe } from "lucide-react";
 import { login, register } from "../../services/authServices";
 import { useAuth } from "../../context/AuthContext";
 import { ApiError } from "../../lib/apiClient";
 
-import capyDoLogo from "../../assets/capydo-logo-512x512.png"
+import capyDoLogo from "../../assets/capydo-logo-512x512.png";
 
 type AuthMode = "signin" | "register";
 
@@ -39,7 +39,7 @@ function detectTimezone(): string {
 
 function Auth() {
   const navigate = useNavigate();
-  const { setToken } = useAuth(); 
+  const { setToken, status } = useAuth();
   const [mode, setMode] = useState<AuthMode>("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,9 +55,16 @@ function Auth() {
 
   const timezoneOptions = getTimezoneOptions();
 
+  if (status === "authenticated") {
+    return <Navigate to="/" replace />;
+  }
+
   useEffect(() => {
     if (mode === "register") {
-        formCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+      formCardRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }
   }, [mode]);
 
@@ -78,7 +85,13 @@ function Auth() {
         sessionStorage.setItem("justLoggedIn", "true");
         navigate("/");
       } else {
-        const { token } = await register({ email, rawPassword, confirmPassword, displayName, timezone });
+        const { token } = await register({
+          email,
+          rawPassword,
+          confirmPassword,
+          displayName,
+          timezone,
+        });
         setToken(token);
         sessionStorage.setItem("justLoggedIn", "true");
         navigate("/onboarding/name-pet"); // only register goes here — every future login goes straight to "/"
@@ -88,7 +101,7 @@ function Auth() {
         setError(
           err.status === 401
             ? "That email or password doesn't match our records."
-            : err.message
+            : err.message,
         );
       } else {
         setError("Something went wrong — check your connection and try again.");
@@ -101,7 +114,10 @@ function Auth() {
   return (
     <div className="flex min-h-screen flex-col items-center bg-[#fcf8f2] px-6 pb-10 pt-14">
       <div className="relative">
-        <img src={capyDoLogo} className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-4xl"/>
+        <img
+          src={capyDoLogo}
+          className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-4xl"
+        />
 
         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-orange-200 px-2.5 py-0.5 text-[11px] font-medium text-orange-700">
           🐾 Cozy
@@ -118,11 +134,17 @@ function Auth() {
         Zero pressure. One gentle breath at a time.
       </div>
 
-      <div ref={formCardRef} className="mt-6 w-full max-w-sm rounded-3xl bg-white p-4 shadow-sm">
+      <div
+        ref={formCardRef}
+        className="mt-6 w-full max-w-sm rounded-3xl bg-white p-4 shadow-sm"
+      >
         <div className="flex rounded-full bg-gray-50 p-1">
           <button
             type="button"
-            onClick={() => { setMode("signin"); setError(null); }}
+            onClick={() => {
+              setMode("signin");
+              setError(null);
+            }}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-medium transition-colors ${
               mode === "signin" ? "bg-emerald-800 text-white" : "text-gray-500"
             }`}
@@ -132,9 +154,14 @@ function Auth() {
           </button>
           <button
             type="button"
-            onClick={() => { setMode("register"); setError(null); }}
+            onClick={() => {
+              setMode("register");
+              setError(null);
+            }}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-medium transition-colors ${
-              mode === "register" ? "bg-emerald-800 text-white" : "text-gray-500"
+              mode === "register"
+                ? "bg-emerald-800 text-white"
+                : "text-gray-500"
             }`}
           >
             <Smile className="h-4 w-4" />
@@ -209,7 +236,8 @@ function Auth() {
                 </select>
               </div>
               <p className="mt-1 text-[11px] text-gray-400">
-                We use this to time your reminders and due dates correctly. Not right? Pick your own above.
+                We use this to time your reminders and due dates correctly. Not
+                right? Pick your own above.
               </p>
             </div>
           )}
@@ -220,7 +248,10 @@ function Auth() {
                 SAFE KEYWORD / PASSWORD
               </label>
               {mode === "signin" && (
-                <button type="button" className="text-xs font-medium text-orange-500">
+                <button
+                  type="button"
+                  className="text-xs font-medium text-orange-500"
+                >
                   Forgot secret?
                 </button>
               )}
@@ -236,8 +267,16 @@ function Auth() {
                 placeholder="Keep it cozy & memorable"
                 className="w-full bg-transparent text-base text-gray-700 outline-none placeholder:text-gray-300"
               />
-              <button type="button" onClick={() => setShowPassword((s) => !s)} className="text-gray-400">
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                className="text-gray-400"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
@@ -268,7 +307,11 @@ function Auth() {
             disabled={isSubmitting}
             className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-800 py-3.5 text-sm font-semibold text-white hover:bg-emerald-900"
           >
-            {isSubmitting ? "One moment..." : mode === "signin" ? "Begin Today's Journey" : "Create My Sanctuary"}
+            {isSubmitting
+              ? "One moment..."
+              : mode === "signin"
+                ? "Begin Today's Journey"
+                : "Create My Sanctuary"}
             {!isSubmitting && <Rocket className="h-4 w-4" />}
           </button>
         </form>

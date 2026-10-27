@@ -9,7 +9,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-
     VitePWA({
       registerType: 'autoUpdate',
 
@@ -37,4 +36,12 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      }
+    }
+  }
 })
