@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
-import MainLayout from './layouts/MainLayout'
-import AuthenticatedProviders from './layouts/AuthenticatedProviders'
+import MainLayout from "./layouts/MainLayout";
+import AuthenticatedProviders from "./layouts/AuthenticatedProviders";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Sanctuary from "./pages/Sanctuary/Sanctuary";
 import Shop from "./pages/Shop/Shop";
@@ -12,37 +12,39 @@ import { AuthProvider } from "./context/AuthContext";
 import CreateTask from "./pages/CreateTask/CreateTask";
 import EditTask from "./pages/EditTask/EditTask";
 import NamePet from "./pages/NamePet/NamePet";
+import UpdatePassword from "./pages/UpdatePassword/UpdatePassword";
 
 function App() {
-    return (
-      <AuthProvider>
-        <div className="app mx-auto min-h-screen w-full max-w-[430px]">
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
+  return (
+    <AuthProvider>
+      <div className="app mx-auto min-h-screen w-full max-w-[430px]">
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
 
-            <Route
-              element={
-                <RequireAuth>
-                  <AuthenticatedProviders />
-                </RequireAuth>
-              }
-            >
-              <Route path="/onboarding/name-pet" element={<NamePet />} />
-              <Route path="/tasks/new" element={<CreateTask />} />
-              <Route path="/tasks/:taskId/edit" element={<EditTask />} />
-              <Route path="/settings" element={<Settings/>}/>
+          <Route
+            element={
+              <RequireAuth>
+                <AuthenticatedProviders />
+              </RequireAuth>
+            }
+          >
+            <Route path="/onboarding/name-pet" element={<NamePet />} />
+            <Route path="/tasks/new" element={<CreateTask />} />
+            <Route path="/tasks/:taskId/edit" element={<EditTask />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings/password" element={<UpdatePassword />} />
 
-              <Route element={<MainLayout />}>
-                <Route path="/" element={<Dashboard/>}/>
-                <Route path="/sanctuary" element={<Sanctuary/>}/>
-                <Route path="/calendar" element={<Calendar/>}/>
-                <Route path="/shop" element={<Shop/>}/>
-              </Route>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/sanctuary" element={<Sanctuary />} />
+              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/shop" element={<Shop />} />
             </Route>
-          </Routes>
-        </div>
-      </AuthProvider>
-    );
+          </Route>
+        </Routes>
+      </div>
+    </AuthProvider>
+  );
 }
 
 export default App;

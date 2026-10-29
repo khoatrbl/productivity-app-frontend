@@ -423,13 +423,13 @@ function Settings() {
               icon={Mail}
               title="Email"
               subtitle={email}
-              onClick={() => navigate("/settings/email")}
-              right={<ChevronRight className="h-4 w-4 text-gray-300" />}
+              // onClick={() => navigate("/settings/email")}
+              // right={<ChevronRight className="h-4 w-4 text-gray-300" />}
             />
             <SettingRow
               icon={KeyRound}
               title="Password"
-              subtitle="Last updated 3 mo ago"
+              subtitle="Update your password"
               onClick={() => navigate("/settings/password")}
               right={<ChevronRight className="h-4 w-4 text-gray-300" />}
             />
