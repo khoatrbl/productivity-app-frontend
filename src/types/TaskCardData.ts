@@ -2,34 +2,34 @@ import type { TaskPriority } from "./TaskPriority";
 import type { TaskStatus } from "./TaskStatus";
 
 export interface SubTaskDto {
-    id: string,
-    parentId: string,
-    content: string,
-    exp: number,
-    position: number,
-    isCompleted: boolean
+  id: string;
+  parentId: string;
+  content: string;
+  exp: number;
+  position: number;
+  isComplete: boolean;
 }
 
 // Define explicit types to help you remember the formats
-export type LocalDate = string;      // Format: "YYYY-MM-DD" (e.g., "2026-09-11")
-export type LocalTime = string;      // Format: "HH:mm:ss"  (e.g., "14:30:00")
+export type LocalDate = string; // Format: "YYYY-MM-DD" (e.g., "2026-09-11")
+export type LocalTime = string; // Format: "HH:mm:ss"  (e.g., "14:30:00")
 export type LocalDateTime = string; // Format: "YYYY-MM-DDTHH:mm:ss" (e.g., "2026-09-11T14:30:00")
 
 export interface TaskDto {
-    taskId: string,
-    title: string,
-    description: string,
-    priority: TaskPriority,
-    status: TaskStatus
-    dueDate: LocalDate,
-    dueTime: LocalTime,
-    estimateMin: number,
-    totalExp: number,
-    totalCoins: number,
-    sprintInMinutes: number,
-    startExpClaimed: boolean,
-    completionRewardClaimed: boolean,
-    bonusPetsGranted: number,
-    createdAt: string,
-    subTasks: SubTaskDto[]
+  taskId: string;
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  dueDate: LocalDate;
+  dueTime: LocalTime;
+  estimateMin: number;
+  totalExp: number;
+  totalCoins: number;
+  sprintInMinutes: number;
+  startExpClaimed: boolean;
+  completionRewardClaimed: boolean;
+  bonusPetsGranted: number;
+  createdAt: string;
+  subTasks: SubTaskDto[];
 }

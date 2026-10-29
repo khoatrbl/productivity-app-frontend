@@ -1,4 +1,13 @@
-import { CheckCircle2, Circle, ListChecks, ChevronUp, Sparkles, Coins, Clock, CalendarDays } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  ListChecks,
+  ChevronUp,
+  Sparkles,
+  Coins,
+  Clock,
+  CalendarDays,
+} from "lucide-react";
 import type { TaskDto } from "../../types/TaskCardData";
 import { TaskStatus } from "../../types/TaskStatus";
 import { formatDueDateTime } from "../../utils/taskFormatter";
@@ -29,7 +38,7 @@ function ExpandedTaskCard({
   onCollapse,
   onToggleSubtask,
 }: ExpandedTaskCardProps) {
-  const completedCount = task.subTasks.filter((s) => s.isCompleted).length;
+  const completedCount = task.subTasks.filter((s) => s.isComplete).length;
   const isInProgress = task.status === TaskStatus.IN_PROGRESS;
   const isComplete = task.status === TaskStatus.COMPLETE;
   const hasSubtasks = task.subTasks.length > 0;
@@ -40,10 +49,14 @@ function ExpandedTaskCard({
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full border-2 border-orange-400" />
           {isInProgress && (
-            <span className="text-xs font-semibold tracking-wide text-orange-500">FOCUSING NOW</span>
+            <span className="text-xs font-semibold tracking-wide text-orange-500">
+              FOCUSING NOW
+            </span>
           )}
           {!isInProgress && !isComplete && (
-            <span className="text-xs font-semibold tracking-wide text-orange-500">READY TO TACKLE</span>
+            <span className="text-xs font-semibold tracking-wide text-orange-500">
+              READY TO TACKLE
+            </span>
           )}
         </div>
 
@@ -62,7 +75,9 @@ function ExpandedTaskCard({
         </div>
       </div>
 
-      <h3 className="mt-2 text-xl font-semibold leading-snug text-gray-900">{task.title}</h3>
+      <h3 className="mt-2 text-xl font-semibold leading-snug text-gray-900">
+        {task.title}
+      </h3>
       <p className="mt-1 text-sm text-gray-500">{task.description}</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-400">
@@ -106,21 +121,27 @@ function ExpandedTaskCard({
                   onClick={() => onToggleSubtask(index)}
                   disabled={!isInProgress}
                   className={`flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-left transition-colors ${
-                    sub.isCompleted ? "bg-emerald-50" : "bg-gray-50 hover:bg-gray-100"
+                    sub.isComplete
+                      ? "bg-emerald-50"
+                      : "bg-gray-50 hover:bg-gray-100"
                   } disabled:cursor-not-allowed disabled:hover:bg-gray-50`}
                 >
                   <div className="flex items-center gap-2">
-                    {sub.isCompleted ? (
+                    {sub.isComplete ? (
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
                     ) : (
                       <Circle className="h-4 w-4 shrink-0 text-gray-300" />
                     )}
-                    <span className={`text-sm ${sub.isCompleted ? "text-gray-400 line-through" : "text-gray-700"}`}>
+                    <span
+                      className={`text-sm ${sub.isComplete ? "text-gray-400 line-through" : "text-gray-700"}`}
+                    >
                       {sub.content}
                     </span>
                   </div>
-                  <span className={`text-xs ${sub.isCompleted ? "text-gray-400" : "text-gray-500"}`}>
-                    {sub.isCompleted ? `✓ +${sub.exp}` : `+${sub.exp} XP`}
+                  <span
+                    className={`text-xs ${sub.isComplete ? "text-gray-400" : "text-gray-500"}`}
+                  >
+                    {sub.isComplete ? `✓ +${sub.exp}` : `+${sub.exp} XP`}
                   </span>
                 </button>
               </li>
@@ -137,7 +158,9 @@ function ExpandedTaskCard({
             className="flex w-full items-center justify-center gap-1.5 rounded-full bg-emerald-800 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
           >
             Start Quest
-            {!hasEarnedStartXp && <span className="text-emerald-200">+{START_TASK_XP} XP</span>}
+            {!hasEarnedStartXp && (
+              <span className="text-emerald-200">+{START_TASK_XP} XP</span>
+            )}
           </button>
         )}
 

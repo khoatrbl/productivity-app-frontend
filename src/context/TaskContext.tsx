@@ -1,7 +1,21 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { TaskDto } from "../types/TaskCardData";
 import { TaskStatus } from "../types/TaskStatus";
-import { createTask, deleteTask, getTasks, updateTask, updateTaskStatus } from "../services/taskServices";
+import {
+  createTask,
+  deleteTask,
+  getTasks,
+  updateSubTaskStatus,
+  updateTask,
+  updateTaskStatus,
+} from "../services/taskServices";
 import { useUserProfileContext } from "./UserProfileContext";
 import type { UpdateTaskRequest } from "../types/UpdateTaskRequest";
 import type { CreateTaskRequest } from "../types/CreateTaskRequest";
@@ -12,7 +26,7 @@ export interface TaskCompletion {
   title: string;
   expGained: number;
   coinsGained: number;
-  bonusPets: number; // 0 for now; filled in when tasks can grant bonus pets
+  bonusPets: number;
 }
 
 interface TaskContextValue {
@@ -27,13 +41,25 @@ interface TaskContextValue {
   handleStart: (task: TaskDto) => Promise<void>;
   handlePause: (task: TaskDto) => Promise<void>;
   handleFinish: (task: TaskDto) => Promise<void>;
-  toggleSubtask: (taskId: string, subtaskIndex: number) => void;
+  toggleSubtask: (taskId: string, subtaskIndex: number) => Promise<void>;
   handleDelete: (taskId: string) => void;
-  handleUpdate: (taskId: string, payload: UpdateTaskRequest) => Promise<TaskDto | null>;
-  handleCreate: (payload: CreateTaskRequest) => Promise<TaskDto | null>;
+  handleCreate: (payload: CreateTaskRequest) => Promise<TaskDto>;
+  handleUpdate: (
+    taskId: string,
+    payload: UpdateTaskRequest,
+  ) => Promise<TaskDto>;
   completion: TaskCompletion | null;
   dismissCompletion: () => void;
   isCelebrationPending: boolean; // a finish is in progress or its overlay is open
+}
+
+// Subtasks always live in state sorted by position, so every consumer
+// (cards, focus mode, editor, toggleSubtask's index) sees the same order.
+function withSortedSubtasks(task: TaskDto): TaskDto {
+  return {
+    ...task,
+    subTasks: [...task.subTasks].sort((a, b) => a.position - b.position),
+  };
 }
 
 const TaskContext = createContext<TaskContextValue | null>(null);
@@ -42,15 +68,22 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<TaskDto[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [taskStartTimes, setTaskStartTimes] = useState<Record<string, number>>({});
-  const { addExp, addCoins, claimStartTaskReward } = useUserProfileContext();
+  const [taskStartTimes, setTaskStartTimes] = useState<Record<string, number>>(
+    {},
+  );
   const [completion, setCompletion] = useState<TaskCompletion | null>(null);
   const [isFinishing, setIsFinishing] = useState(false);
+
+  const { addExp, addCoins, claimStartTaskReward } = useUserProfileContext();
   const { refreshPet } = usePet();
+
+  // Subtask saves still in flight, per task. Pause/finish wait for these so a
+  // status response can't overwrite a toggle the server hasn't committed yet.
+  const pendingSubtaskSaves = useRef(new Map<string, Set<Promise<unknown>>>());
 
   useEffect(() => {
     getTasks()
-      .then(setTasks)
+      .then((list) => setTasks(list.map(withSortedSubtasks)))
       .catch((err) => setError(err.message ?? "Failed to load tasks."))
       .finally(() => setIsLoading(false));
   }, []);
@@ -73,19 +106,45 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     });
   }, [tasks]);
 
-  const isAnyTaskActive = tasks.some((t) => t.status === TaskStatus.IN_PROGRESS);
+  const isAnyTaskActive = tasks.some(
+    (t) => t.status === TaskStatus.IN_PROGRESS,
+  );
   const visibleTasks = tasks.filter((t) => t.status !== TaskStatus.COMPLETE);
-  const activeTask = tasks.find((t) => t.status === TaskStatus.IN_PROGRESS) ?? null;
+  const activeTask =
+    tasks.find((t) => t.status === TaskStatus.IN_PROGRESS) ?? null;
 
-  async function updateStatus(taskId: string, status: TaskStatus): Promise<TaskDto | null> {
+  /* ---------- helpers ---------- */
+
+  function trackSubtaskSave(taskId: string, promise: Promise<unknown>) {
+    const set = pendingSubtaskSaves.current.get(taskId) ?? new Set();
+    set.add(promise);
+    pendingSubtaskSaves.current.set(taskId, set);
+    promise.finally(() => set.delete(promise));
+  }
+
+  async function waitForSubtaskSaves(taskId: string) {
+    const set = pendingSubtaskSaves.current.get(taskId);
+    if (set && set.size > 0) await Promise.allSettled([...set]);
+  }
+
+  async function updateStatus(
+    taskId: string,
+    status: TaskStatus,
+  ): Promise<TaskDto | null> {
     if (!taskId) {
       console.error("updateStatus called with an empty taskId — aborting.");
       return null;
     }
-    const updatedTask = await updateTaskStatus(taskId, status);
-    setTasks((prev) => prev.map((t) => (t.taskId === taskId ? updatedTask : t)));
+    const updatedTask = withSortedSubtasks(
+      await updateTaskStatus(taskId, status),
+    );
+    setTasks((prev) =>
+      prev.map((t) => (t.taskId === taskId ? updatedTask : t)),
+    );
     return updatedTask;
   }
+
+  /* ---------- status actions ---------- */
 
   async function handleStart(task: TaskDto) {
     try {
@@ -107,6 +166,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   async function handleFinish(task: TaskDto) {
     setIsFinishing(true);
     try {
+      await waitForSubtaskSaves(task.taskId);
+
       let updated: TaskDto | null = null;
       try {
         updated = await updateStatus(task.taskId, TaskStatus.COMPLETE);
@@ -150,54 +211,79 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   async function handlePause(task: TaskDto) {
     try {
+      await waitForSubtaskSaves(task.taskId);
       await updateStatus(task.taskId, TaskStatus.INCOMPLETE);
     } catch (err) {
       console.error("Failed to pause task:", err);
     }
   }
 
-  function toggleSubtask(taskId: string, subtaskIndex: number) {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.taskId !== taskId) return t;
-        const updatedSubTasks = t.subTasks.map((s, i) =>
-          i === subtaskIndex ? { ...s, isCompleted: !s.isCompleted } : s
-        );
-        return { ...t, subTasks: updatedSubTasks };
-      })
-    );
+  /* ---------- subtasks ---------- */
+
+  async function toggleSubtask(
+    taskId: string,
+    subtaskIndex: number,
+  ): Promise<void> {
+    const task = tasks.find((t) => t.taskId === taskId);
+    const target = task?.subTasks[subtaskIndex];
+    if (!task || !target) return;
+
+    const subTaskId = target.id;
+    const nextValue = !target.isComplete;
+
+    // Optimistic: flip it immediately (by id, so concurrent toggles don't clash)
+    const setSubtask = (value: boolean) =>
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.taskId !== taskId
+            ? t
+            : {
+                ...t,
+                subTasks: t.subTasks.map((s) =>
+                  s.id === subTaskId ? { ...s, isComplete: value } : s,
+                ),
+              },
+        ),
+      );
+
+    setSubtask(nextValue);
+
+    const request = updateSubTaskStatus(taskId, subTaskId, nextValue);
+    trackSubtaskSave(taskId, request);
+
+    try {
+      await request;
+    } catch (err) {
+      console.error("Failed to update subtask:", err);
+      setSubtask(!nextValue); // roll back
+    }
   }
+
+  /* ---------- CRUD ---------- */
 
   async function handleDelete(taskId: string) {
     setTasks((prev) => prev.filter((t) => t.taskId !== taskId));
 
     try {
-      await deleteTask(taskId)
+      await deleteTask(taskId);
     } catch (err) {
       console.error("Failed to delete task: ", err);
     }
   }
 
-  async function handleUpdate(taskId: string, payload: UpdateTaskRequest): Promise<TaskDto | null> {
-    try {
-      const updated = await updateTask(taskId, payload);
-      setTasks((prev) => prev.map((t) => (t.taskId === taskId ? updated : t)));
-      return updated;
-    } catch (err) {
-      console.error("Failed to update task:", err);
-      return null;
-    }
+  async function handleUpdate(
+    taskId: string,
+    payload: UpdateTaskRequest,
+  ): Promise<TaskDto> {
+    const updated = withSortedSubtasks(await updateTask(taskId, payload)); // throws ApiError on failure
+    setTasks((prev) => prev.map((t) => (t.taskId === taskId ? updated : t)));
+    return updated;
   }
 
-  async function handleCreate(payload: CreateTaskRequest): Promise<TaskDto | null> {
-    try {
-      const created = await createTask(payload);
-      setTasks((prev) => [...prev, created]);
-      return created;
-    } catch (err) {
-      console.error("Failed to create task:", err);
-      return null;
-    }
+  async function handleCreate(payload: CreateTaskRequest): Promise<TaskDto> {
+    const created = withSortedSubtasks(await createTask(payload)); // throws ApiError on failure
+    setTasks((prev) => [...prev, created]);
+    return created;
   }
 
   return (
@@ -210,10 +296,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         error,
         isAnyTaskActive,
         hasEarnedStartXp: (taskId) => {
-          const task = tasks.find(t => t.taskId === taskId);
+          const task = tasks.find((t) => t.taskId === taskId);
           return task?.startExpClaimed ?? false;
         },
-        getStartedAt: (taskId) => taskStartTimes[taskId], 
+        getStartedAt: (taskId) => taskStartTimes[taskId],
         handleCreate,
         handleStart,
         handleUpdate,
