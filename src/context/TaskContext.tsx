@@ -74,7 +74,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [completion, setCompletion] = useState<TaskCompletion | null>(null);
   const [isFinishing, setIsFinishing] = useState(false);
 
-  const { addExp, addCoins, claimStartTaskReward } = useUserProfileContext();
+  const { applyRewardProfile, claimStartTaskReward } = useUserProfileContext();
   const { refreshPet } = usePet();
 
   // Subtask saves still in flight, per task. Pause/finish wait for these so a
@@ -177,21 +177,20 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }
       if (!updated) return;
 
-      try {
-        await addExp(task.totalExp);
-      } catch (err) {
-        console.error("Failed to add EXP:", err);
-      }
-      try {
-        await addCoins(task.totalCoins);
-      } catch (err) {
-        console.error("Failed to add coins:", err);
+      const expGained = updated.expGranted ?? 0;
+      const coinsGained = updated.coinsGranted ?? 0;
+
+      if (updated.profile) {
+        applyRewardProfile(updated.profile, {
+          exp: expGained,
+          coins: coinsGained,
+        });
       }
 
       const bonusPets = updated.bonusPetsGranted ?? 0;
       if (bonusPets > 0) {
         try {
-          await refreshPet(); // the Sanctuary picks up the new bonus pets and stream
+          await refreshPet();
         } catch (err) {
           console.error("Failed to refresh pet:", err);
         }
@@ -200,8 +199,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setCompletion({
         id: crypto.randomUUID(),
         title: task.title,
-        expGained: task.totalExp,
-        coinsGained: task.totalCoins,
+        expGained, // what the server actually granted
+        coinsGained,
         bonusPets,
       });
     } finally {

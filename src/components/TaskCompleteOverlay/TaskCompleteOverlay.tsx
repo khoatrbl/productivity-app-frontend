@@ -12,14 +12,26 @@ interface TaskCompleteOverlayProps {
   onDismiss: () => void;
 }
 
-export function TaskCompleteOverlay({ completion, onDismiss }: TaskCompleteOverlayProps) {
+const pct = (value: number, max: number) =>
+  max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
+
+export function TaskCompleteOverlay({
+  completion,
+  onDismiss,
+}: TaskCompleteOverlayProps) {
   const navigate = useNavigate();
   const { level, exp, maxExp, levelUpEvents } = useUserProfileContext();
   const { pet } = usePet();
 
   const leveledUp = levelUpEvents.length > 0;
-  const progress = maxExp > 0 ? Math.min(100, Math.round((exp / maxExp) * 100)) : 0;
   const petName = pet?.name ?? "Your capy";
+
+  // Where the bar was before this quest. After a level-up the bar restarted,
+  // so everything currently in it was earned now (start from 0).
+  const expBefore = leveledUp ? 0 : Math.max(0, exp - completion.expGained);
+  const beforePct = pct(expBefore, maxExp);
+  const afterPct = pct(exp, maxExp);
+  const progressLabel = Math.round(afterPct);
 
   function visitPet() {
     onDismiss();
@@ -27,7 +39,10 @@ export function TaskCompleteOverlay({ completion, onDismiss }: TaskCompleteOverl
   }
 
   return createPortal(
-    <div onClick={onDismiss} className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div
+      onClick={onDismiss}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+    >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -48,21 +63,35 @@ export function TaskCompleteOverlay({ completion, onDismiss }: TaskCompleteOverl
         <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-orange-700">
           <Trophy className="h-3.5 w-3.5" /> Quest complete
         </span>
-        <h2 className="mt-2 text-[26px] font-extrabold leading-tight text-gray-900">Quest conquered!</h2>
-        <p className="mt-1 text-sm text-gray-500">{petName} is so proud of you.</p>
+        <h2 className="mt-2 text-[26px] font-extrabold leading-tight text-gray-900">
+          Quest conquered!
+        </h2>
+        <p className="mt-1 text-sm text-gray-500">
+          {petName} is so proud of you.
+        </p>
 
         {/* Pet avatar */}
         <div className="relative mx-auto mt-5 w-fit">
           <motion.div
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 16 }}
+            transition={{
+              delay: 0.15,
+              type: "spring",
+              stiffness: 300,
+              damping: 16,
+            }}
             className="h-36 w-36 overflow-hidden rounded-full border-4 border-white bg-emerald-50"
           >
-            <img src={petAvatar} alt={petName} className="h-full w-full object-cover" />
+            <img
+              src={petAvatar}
+              alt={petName}
+              className="h-full w-full object-cover"
+            />
           </motion.div>
           <span className="absolute -bottom-2 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full bg-amber-300 px-3 py-1 text-xs font-bold text-amber-900">
-            <Heart className="h-3 w-3 fill-current" /> Lv. {pet?.petLevel.level ?? 1} {petName}
+            <Heart className="h-3 w-3 fill-current" /> Lv.{" "}
+            {pet?.petLevel.level ?? 1} {petName}
           </span>
         </div>
 
@@ -77,65 +106,98 @@ export function TaskCompleteOverlay({ completion, onDismiss }: TaskCompleteOverl
             <Check className="h-5 w-5 text-emerald-700" />
           </span>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">Completed quest</p>
-            <p className="truncate font-semibold text-gray-900">{completion.title}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
+              Completed quest
+            </p>
+            <p className="truncate font-semibold text-gray-900">
+              {completion.title}
+            </p>
           </div>
         </motion.div>
 
         {/* Rewards */}
         <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45 }}
-        className="mt-3 rounded-2xl bg-[#F3EEE6] p-4 text-left"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="mt-3 rounded-2xl bg-[#F3EEE6] p-4 text-left"
         >
-        <p className="font-semibold text-gray-800">Rewards claimed</p>
+          <p className="font-semibold text-gray-800">Rewards claimed</p>
 
-        {/* Reward tiles: XP, Citrus, and bonus pets when granted */}
-        <div className={`mt-3 grid gap-2 ${completion.bonusPets > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
+          {/* Reward tiles: amounts the server actually granted */}
+          <div
+            className={`mt-3 grid gap-2 ${completion.bonusPets > 0 ? "grid-cols-3" : "grid-cols-2"}`}
+          >
             <RewardTile
-            icon={<Sparkles className="h-4 w-4 text-amber-500" />}
-            iconBg="bg-amber-100"
-            label="EXP"
-            value={`+${completion.expGained}`}
-            delay={0.55}
+              icon={<Sparkles className="h-4 w-4 text-amber-500" />}
+              iconBg="bg-amber-100"
+              label="EXP"
+              value={`+${completion.expGained}`}
+              delay={0.55}
             />
             <RewardTile
-            icon={<Citrus className="h-4 w-4 text-[#F48C42]" />}
-            iconBg="bg-orange-100"
-            label="Citrus"
-            value={`+${completion.coinsGained}`}
-            delay={0.65}
+              icon={<Citrus className="h-4 w-4 text-[#F48C42]" />}
+              iconBg="bg-orange-100"
+              label="Citrus"
+              value={`+${completion.coinsGained}`}
+              delay={0.65}
             />
             {completion.bonusPets > 0 && (
-            <RewardTile
+              <RewardTile
                 icon={<PawPrint className="h-4 w-4 text-rose-500" />}
                 iconBg="bg-rose-100"
                 label="Bonus pets"
                 value={`+${completion.bonusPets}`}
                 delay={0.75}
                 highlight
-            />
+              />
             )}
-        </div>
+          </div>
 
-        {/* Level progress */}
-        <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-white">
+          {/* Level progress: what you had, plus what this quest added */}
+          <div className="mt-4 flex items-center justify-between text-xs">
+            <span className="font-semibold text-gray-600">
+              {leveledUp ? `Lv. ${level}` : `Lv. ${level} progress`}
+            </span>
+            <motion.span
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700"
+            >
+              +{completion.expGained} XP
+            </motion.span>
+          </div>
+
+          <div className="relative mt-1.5 h-2.5 overflow-hidden rounded-full bg-white">
+            {/* Gained portion: grows from the old position to the new one */}
             <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
-            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-400"
+              initial={{ width: `${beforePct}%` }}
+              animate={{ width: `${afterPct}%` }}
+              transition={{ delay: 0.7, duration: 0.9, ease: "easeOut" }}
+              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400"
             />
-        </div>
-        <div className="mt-1.5 flex justify-between text-xs text-gray-400">
-            <span>{exp} / {maxExp} XP</span>
+            {/* Previous progress, drawn on top in a softer tone */}
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-amber-200"
+              style={{ width: `${beforePct}%` }}
+            />
+          </div>
+
+          <div className="mt-1.5 flex justify-between text-xs text-gray-400">
+            <span>
+              {exp} / {maxExp} XP
+            </span>
             {leveledUp ? (
-            <span className="font-bold text-emerald-700">Level up! Lv. {level}</span>
+              <span className="font-bold text-emerald-700">
+                Level up! Lv. {level}
+              </span>
             ) : (
-            <span>{progress}% to Lv. {level + 1}</span>
+              <span>
+                {progressLabel}% to Lv. {level + 1}
+              </span>
             )}
-        </div>
+          </div>
         </motion.div>
 
         {/* Actions */}
@@ -153,7 +215,7 @@ export function TaskCompleteOverlay({ completion, onDismiss }: TaskCompleteOverl
         </button>
       </motion.div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -166,7 +228,14 @@ interface RewardTileProps {
   highlight?: boolean;
 }
 
-function RewardTile({ icon, iconBg, label, value, delay, highlight = false }: RewardTileProps) {
+function RewardTile({
+  icon,
+  iconBg,
+  label,
+  value,
+  delay,
+  highlight = false,
+}: RewardTileProps) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.85 }}
@@ -176,7 +245,11 @@ function RewardTile({ icon, iconBg, label, value, delay, highlight = false }: Re
         highlight ? "ring-2 ring-rose-200" : ""
       }`}
     >
-      <span className={`flex h-8 w-8 items-center justify-center rounded-full ${iconBg}`}>{icon}</span>
+      <span
+        className={`flex h-8 w-8 items-center justify-center rounded-full ${iconBg}`}
+      >
+        {icon}
+      </span>
       <p className="text-[11px] leading-tight text-gray-400">{label}</p>
       <p className="text-sm font-bold text-gray-900">{value}</p>
     </motion.div>

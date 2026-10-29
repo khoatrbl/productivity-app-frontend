@@ -1,8 +1,22 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { getProfile, updateUserProfile, addExp as addExpBackend, addCoins as addCoinsBackend } from "../services/userProfileServices";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  getProfile,
+  updateUserProfile,
+  addExp as addExpBackend,
+  addCoins as addCoinsBackend,
+} from "../services/userProfileServices";
 import { useAuth } from "./AuthContext";
 import { claimDailyQuote } from "../services/quoteServices";
 import { claimStartExpReward } from "../services/taskServices";
+import type { ProfileDto } from "../types/UserProfile";
 
 interface UserProfileState {
   name: string;
@@ -34,23 +48,33 @@ interface LevelUpEvent {
 interface UserProfileContextValue extends UserProfileState {
   isLoading: boolean;
   error: string | null;
-  addExp: (amount: number) => Promise<void>;
-  addCoins: (amount: number) => Promise<void>;
   recentGains: XpGain[];
   clearGain: (id: string) => void;
-  recentCoinGains: CoinGain[]; 
-  clearCoinGain: (id: string) => void; 
+  recentCoinGains: CoinGain[];
+  clearCoinGain: (id: string) => void;
   levelUpEvents: LevelUpEvent[];
   clearLevelUp: (id: string) => void;
   claimQuoteReward: () => Promise<boolean>; // returns whether XP was actually granted
-  claimStartTaskReward: (taskId: string) => Promise<boolean>; 
+  claimStartTaskReward: (taskId: string) => Promise<boolean>;
   syncCoins: (newCoins: number) => void;
   updateDisplayName: (displayName: string) => Promise<void>;
+  applyRewardProfile: (
+    profile: ProfileDto,
+    gains: { exp: number; coins: number },
+  ) => void;
 }
 
 const UserProfileContext = createContext<UserProfileContextValue | null>(null);
 
-const EMPTY_STATE: UserProfileState = { name: "", email: "", subtitle: "", level: 1, exp: 0, maxExp: 100, coins: 0 };
+const EMPTY_STATE: UserProfileState = {
+  name: "",
+  email: "",
+  subtitle: "",
+  level: 1,
+  exp: 0,
+  maxExp: 100,
+  coins: 0,
+};
 const STATIC_SUBTITLE = "Keep growing!";
 
 export function UserProfileProvider({ children }: { children: ReactNode }) {
@@ -96,7 +120,9 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setIsLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const updateDisplayName = useCallback(async (displayName: string) => {
@@ -116,39 +142,45 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const addExp = useCallback(async (amount: number) => {
-    const previousLevel = stateRef.current.level;
-    const result = await addExpBackend(amount);
-    const newLevel = result.currentLevel.level;
+  const applyRewardProfile = useCallback(
+    (profile: ProfileDto, gains: { exp: number; coins: number }) => {
+      const previousLevel = stateRef.current.level;
+      const newLevel = profile.currentLevel.level;
 
-    setState((prev) => ({
-      ...prev,
-      exp: result.currentExp,
-      level: newLevel,
-      maxExp: result.currentLevel.threshold,
-    }));
+      setState((prev) => ({
+        ...prev,
+        exp: profile.currentExp,
+        level: newLevel,
+        maxExp: profile.currentLevel.threshold,
+        coins: profile.coins,
+      }));
 
-    setRecentGains((prev) => [...prev, { id: crypto.randomUUID(), amount }]);
-
-    // Backend is the single source of truth for whether a level-up actually
-    // happened — this also correctly handles jumping multiple levels in one
-    // grant (still just one celebration, for the final level reached).
-    if (newLevel > previousLevel) {
-      setLevelUpEvents((prev) => [...prev, { id: crypto.randomUUID(), newLevel, previousLevel }]);
-    }
-  }, []);
-
-  const addCoins = useCallback(async (amount: number) => {
-    const result = await addCoinsBackend(amount);
-    setState((prev) => ({ ...prev, coins: result.currentCoins }));
-    setRecentCoinGains((prev) => [...prev, { id: crypto.randomUUID(), amount }]);
-  }, []);
+      if (gains.exp > 0)
+        setRecentGains((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), amount: gains.exp },
+        ]);
+      if (gains.coins > 0)
+        setRecentCoinGains((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), amount: gains.coins },
+        ]);
+      if (newLevel > previousLevel) {
+        setLevelUpEvents((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), newLevel, previousLevel },
+        ]);
+      }
+    },
+    [],
+  );
 
   const clearGain = useCallback((id: string) => {
     setRecentGains((prev) => prev.filter((g) => g.id !== id));
   }, []);
 
-  const clearCoinGain = useCallback((id: string) => { // NEW
+  const clearCoinGain = useCallback((id: string) => {
+    // NEW
     setRecentCoinGains((prev) => prev.filter((g) => g.id !== id));
   }, []);
 
@@ -167,41 +199,69 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         maxExp: profile.currentLevel.threshold,
         coins: profile.coins,
       }));
-      setRecentGains((prev) => [...prev, { id: crypto.randomUUID(), amount: expGranted }]); 
+      setRecentGains((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), amount: expGranted },
+      ]);
     }
 
     return claimed;
   }, []);
 
-  const claimStartTaskReward = useCallback(async (taskId: string): Promise<boolean> => {
-    const {claimed, expGranted, profile } = await claimStartExpReward(taskId);
+  const claimStartTaskReward = useCallback(
+    async (taskId: string): Promise<boolean> => {
+      const { claimed, expGranted, profile } =
+        await claimStartExpReward(taskId);
 
-    if (claimed) {
-      setState((prev) => ({
-        ...prev,
-        exp: profile.currentExp,
-        level: profile.currentLevel.level,
-        maxExp: profile.currentLevel.threshold,
-        coins: profile.coins
-      }));
+      if (claimed) {
+        setState((prev) => ({
+          ...prev,
+          exp: profile.currentExp,
+          level: profile.currentLevel.level,
+          maxExp: profile.currentLevel.threshold,
+          coins: profile.coins,
+        }));
 
-      setRecentGains((prev) => [...prev, {id : crypto.randomUUID(), amount: expGranted}]);
-    }
+        setRecentGains((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), amount: expGranted },
+        ]);
+      }
 
-    return claimed;
-  }, [])
+      return claimed;
+    },
+    [],
+  );
 
   const syncCoins = useCallback((newCoins: number) => {
     const delta = newCoins - stateRef.current.coins;
     setState((prev) => ({ ...prev, coins: newCoins }));
     if (delta !== 0) {
-      setRecentCoinGains((prev) => [...prev, { id: crypto.randomUUID(), amount: delta }]);
+      setRecentCoinGains((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), amount: delta },
+      ]);
     }
   }, []);
 
   return (
     <UserProfileContext.Provider
-      value={{ ...state, isLoading, error, addExp, addCoins, claimQuoteReward, claimStartTaskReward, recentGains, clearGain, recentCoinGains, clearCoinGain, levelUpEvents, clearLevelUp, syncCoins, updateDisplayName }}
+      value={{
+        ...state,
+        isLoading,
+        error,
+        claimQuoteReward,
+        claimStartTaskReward,
+        recentGains,
+        clearGain,
+        recentCoinGains,
+        clearCoinGain,
+        levelUpEvents,
+        clearLevelUp,
+        syncCoins,
+        updateDisplayName,
+        applyRewardProfile,
+      }}
     >
       {children}
     </UserProfileContext.Provider>
@@ -210,6 +270,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
 
 export function useUserProfileContext() {
   const ctx = useContext(UserProfileContext);
-  if (!ctx) throw new Error("useSanctuary must be used within a SanctuaryProvider");
+  if (!ctx)
+    throw new Error("useSanctuary must be used within a SanctuaryProvider");
   return ctx;
 }

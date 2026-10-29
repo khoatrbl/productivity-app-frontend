@@ -1,5 +1,6 @@
 import type { TaskPriority } from "./TaskPriority";
 import type { TaskStatus } from "./TaskStatus";
+import type { ProfileDto } from "./UserProfile";
 
 export interface SubTaskDto {
   id: string;
@@ -32,4 +33,7 @@ export interface TaskDto {
   bonusPetsGranted: number;
   createdAt: string;
   subTasks: SubTaskDto[];
+  expGranted?: number;
+  coinsGranted?: number;
+  profile?: ProfileDto | null;
 }
