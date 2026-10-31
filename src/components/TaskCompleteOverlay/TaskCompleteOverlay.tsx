@@ -1,7 +1,15 @@
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Check, Citrus, Heart, PawPrint, Sparkles, Trophy } from "lucide-react";
+import {
+  Check,
+  Citrus,
+  Clock,
+  Heart,
+  PawPrint,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
 import { useUserProfileContext } from "../../context/UserProfileContext";
 import { usePet } from "../../context/PetContext";
 import type { TaskCompletion } from "../../context/TaskContext";
@@ -15,6 +23,14 @@ interface TaskCompleteOverlayProps {
 const pct = (value: number, max: number) =>
   max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
 
+function describeLateness(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"}`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"}`;
+}
+
 export function TaskCompleteOverlay({
   completion,
   onDismiss,
@@ -25,6 +41,7 @@ export function TaskCompleteOverlay({
 
   const leveledUp = levelUpEvents.length > 0;
   const petName = pet?.name ?? "Your capy";
+  const wasLate = completion.rewardPercent < 100;
 
   // Where the bar was before this quest. After a level-up the bar restarted,
   // so everything currently in it was earned now (start from 0).
@@ -67,7 +84,9 @@ export function TaskCompleteOverlay({
           Quest conquered!
         </h2>
         <p className="mt-1 text-sm text-gray-500">
-          {petName} is so proud of you.
+          {wasLate
+            ? `Better late than never. ${petName} is still proud of you.`
+            : `${petName} is so proud of you.`}
         </p>
 
         {/* Pet avatar */}
@@ -122,7 +141,14 @@ export function TaskCompleteOverlay({
           transition={{ delay: 0.45 }}
           className="mt-3 rounded-2xl bg-[#F3EEE6] p-4 text-left"
         >
-          <p className="font-semibold text-gray-800">Rewards claimed</p>
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-gray-800">Rewards claimed</p>
+            {wasLate && (
+              <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-gray-500">
+                {completion.rewardPercent}%
+              </span>
+            )}
+          </div>
 
           {/* Reward tiles: amounts the server actually granted */}
           <div
@@ -153,6 +179,26 @@ export function TaskCompleteOverlay({
               />
             )}
           </div>
+
+          {/* Gentle note when the quest was finished late */}
+          {wasLate && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-3 flex items-start gap-2 rounded-xl bg-white/70 px-3 py-2 text-xs text-gray-500"
+            >
+              <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gray-400" />
+              <p>
+                Finished {describeLateness(completion.lateMinutes)} after the
+                original due time, so you earned {completion.rewardPercent}% of
+                the rewards.{" "}
+                <span className="font-semibold text-emerald-700">
+                  Done is better than never!
+                </span>
+              </p>
+            </motion.div>
+          )}
 
           {/* Level progress: what you had, plus what this quest added */}
           <div className="mt-4 flex items-center justify-between text-xs">

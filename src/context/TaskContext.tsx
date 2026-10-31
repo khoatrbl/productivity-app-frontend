@@ -24,9 +24,11 @@ import { usePet } from "./PetContext";
 export interface TaskCompletion {
   id: string;
   title: string;
-  expGained: number;
+  expGained: number; // what the server actually granted (after any late adjustment)
   coinsGained: number;
   bonusPets: number;
+  rewardPercent: number; // 100 when finished on time
+  lateMinutes: number; // 0 when finished on time
 }
 
 interface TaskContextValue {
@@ -177,9 +179,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }
       if (!updated) return;
 
+      // Everything below comes from the server: the amounts already include
+      // any late adjustment, so the frontend never calculates rewards itself.
       const expGained = updated.expGranted ?? 0;
       const coinsGained = updated.coinsGranted ?? 0;
+      const rewardPercent = updated.rewardPercent ?? 100;
+      const lateMinutes = updated.lateMinutes ?? 0;
+      const bonusPets = updated.bonusPetsGranted ?? 0;
 
+      // Update the header (EXP bar, level, Citrus) BEFORE opening the overlay,
+      // so the overlay's level bar reads the new values.
       if (updated.profile) {
         applyRewardProfile(updated.profile, {
           exp: expGained,
@@ -187,10 +196,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      const bonusPets = updated.bonusPetsGranted ?? 0;
       if (bonusPets > 0) {
         try {
-          await refreshPet();
+          await refreshPet(); // the Sanctuary picks up the new bonus pets and stream
         } catch (err) {
           console.error("Failed to refresh pet:", err);
         }
@@ -199,9 +207,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setCompletion({
         id: crypto.randomUUID(),
         title: task.title,
-        expGained, // what the server actually granted
+        expGained,
         coinsGained,
         bonusPets,
+        rewardPercent,
+        lateMinutes,
       });
     } finally {
       setIsFinishing(false);

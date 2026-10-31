@@ -30,10 +30,14 @@ export interface TaskDto {
   sprintInMinutes: number;
   startExpClaimed: boolean;
   completionRewardClaimed: boolean;
-  bonusPetsGranted: number;
   createdAt: string;
   subTasks: SubTaskDto[];
+
+  // Filled in only on the response that completes a task
   expGranted?: number;
   coinsGranted?: number;
+  bonusPetsGranted?: number;
+  rewardPercent?: number; // 100 = on time
+  lateMinutes?: number; // minutes past the ORIGINAL deadline
   profile?: ProfileDto | null;
 }
