@@ -178,7 +178,7 @@ function Settings() {
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
-  const [isSavingName, setIsSavingName] = useState(false);
+  const [isSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
 
   // Local-only preferences (wire to backend later)

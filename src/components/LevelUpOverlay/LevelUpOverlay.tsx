@@ -1,13 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import dancingCapybara from "../../assets/capybara-dancing.gif"
+import dancingCapybara from "../../assets/capybara-dancing.gif";
 import { ItemType } from "../../types/ItemType";
-import { Crown, Footprints, Shirt, Unlock, type LucideIcon } from "lucide-react";
-import { getShopItems } from "../../services/shopServices";
+import {
+  Crown,
+  Footprints,
+  Shirt,
+  Unlock,
+  type LucideIcon,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { ShopItemsDto } from "../../types/ShopItemsDto";
-import { getShopItemsCached, getShopItemsSnapshot } from "../../services/shopServices";
+import {
+  getShopItemsCached,
+  getShopItemsSnapshot,
+} from "../../services/shopServices";
 import UnlocksSkeleton from "./UnlocksSkeleton";
 
 interface LevelUpOverlayProps {
@@ -35,7 +43,14 @@ interface ConfettiPiece {
   duration: number;
 }
 
-const CONFETTI_COLORS = ["#f59e0b", "#fb923c", "#34d399", "#38bdf8", "#f472b6", "#facc15"];
+const CONFETTI_COLORS = [
+  "#f59e0b",
+  "#fb923c",
+  "#34d399",
+  "#38bdf8",
+  "#f472b6",
+  "#facc15",
+];
 
 function generateConfetti(count: number): ConfettiPiece[] {
   return Array.from({ length: count }, (_, i) => {
@@ -54,13 +69,25 @@ function generateConfetti(count: number): ConfettiPiece[] {
   });
 }
 
-function pickUnlocks(items: ShopItemsDto[], previousLevel: number, level: number) {
+function pickUnlocks(
+  items: ShopItemsDto[],
+  previousLevel: number,
+  level: number,
+) {
   return items
-    .filter((i) => i.requiredUserLevel > previousLevel && i.requiredUserLevel <= level)
+    .filter(
+      (i) =>
+        i.requiredUserLevel > previousLevel && i.requiredUserLevel <= level,
+    )
     .sort((a, b) => a.price - b.price);
 }
 
-export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismiss }: LevelUpOverlayProps) {
+export function LevelUpOverlay({
+  level,
+  previousLevel,
+  duration = 4000,
+  onDismiss,
+}: LevelUpOverlayProps) {
   const navigate = useNavigate();
   const confetti = useMemo(() => generateConfetti(36), []);
   const [unlocks, setUnlocks] = useState<ShopItemsDto[] | null>(() => {
@@ -72,7 +99,10 @@ export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismis
     if (unlocks !== null) return; // already known from the cache
     let cancelled = false;
     getShopItemsCached()
-      .then((items) => !cancelled && setUnlocks(pickUnlocks(items, previousLevel, level)))
+      .then(
+        (items) =>
+          !cancelled && setUnlocks(pickUnlocks(items, previousLevel, level)),
+      )
       .catch(() => !cancelled && setUnlocks([]));
     return () => {
       cancelled = true;
@@ -88,11 +118,16 @@ export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismis
 
   function goToShop() {
     onDismiss();
-    navigate("/shop", { state: { filter: unlocks?.[0]?.itemType ?? ItemType.HEADWEAR } });
+    navigate("/shop", {
+      state: { filter: unlocks?.[0]?.itemType ?? ItemType.HEADWEAR },
+    });
   }
 
   return createPortal(
-    <div onClick={onDismiss} className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div
+      onClick={onDismiss}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+    >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -121,7 +156,11 @@ export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismis
                 rotate: piece.rotate,
                 scale: 1,
               }}
-              transition={{ duration: piece.duration, delay: piece.delay, ease: "easeOut" }}
+              transition={{
+                duration: piece.duration,
+                delay: piece.delay,
+                ease: "easeOut",
+              }}
               style={{
                 backgroundColor: piece.color,
                 width: piece.shape === "circle" ? 7 : 5,
@@ -152,10 +191,17 @@ export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismis
             }}
             className="text-7xl"
           >
-            <img src={dancingCapybara} alt="dancing capybara" className="w-35 h-auto" />
+            <img
+              src={dancingCapybara}
+              alt="dancing capybara"
+              className="w-35 h-auto"
+            />
           </motion.div>
           <motion.div
-            animate={{ scaleX: [1, 0.7, 0.35, 0.35, 0.75, 0.95, 1], opacity: [0.25, 0.18, 0.08, 0.08, 0.16, 0.22, 0.25] }}
+            animate={{
+              scaleX: [1, 0.7, 0.35, 0.35, 0.75, 0.95, 1],
+              opacity: [0.25, 0.18, 0.08, 0.08, 0.16, 0.22, 0.25],
+            }}
             transition={{
               duration: 1.3,
               delay: 0.35,
@@ -166,7 +212,9 @@ export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismis
           />
         </div>
 
-        <p className="relative mt-2 text-center text-2xl font-bold text-emerald-900">You have reached Lv.{level}!</p>
+        <p className="relative mt-2 text-center text-2xl font-bold text-emerald-900">
+          You have reached Lv.{level}!
+        </p>
 
         {/* New in the shop: only when this level unlocked something */}
         <AnimatePresence mode="wait" initial={false}>
@@ -197,18 +245,25 @@ export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismis
                 {unlocks.slice(0, MAX_LISTED).map((item) => {
                   const Icon = TYPE_ICON[item.itemType];
                   return (
-                    <li key={item.id} className="flex items-center gap-2 text-sm">
+                    <li
+                      key={item.id}
+                      className="flex items-center gap-2 text-sm"
+                    >
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-50">
                         <Icon className="h-4 w-4 text-amber-600" />
                       </span>
-                      <span className="truncate font-medium text-gray-800">{item.name}</span>
+                      <span className="truncate font-medium text-gray-800">
+                        {item.name}
+                      </span>
                     </li>
                   );
                 })}
               </ul>
 
               {unlocks.length > MAX_LISTED && (
-                <p className="mt-1.5 text-xs text-gray-400">+{unlocks.length - MAX_LISTED} more</p>
+                <p className="mt-1.5 text-xs text-gray-400">
+                  +{unlocks.length - MAX_LISTED} more
+                </p>
               )}
 
               <button
@@ -221,9 +276,11 @@ export function LevelUpOverlay({ level, previousLevel, duration = 4000, onDismis
           ) : null}
         </AnimatePresence>
 
-        <p className="relative mt-2 text-xs text-gray-400">Tap anywhere to continue</p>
+        <p className="relative mt-2 text-xs text-gray-400">
+          Tap anywhere to continue
+        </p>
       </motion.div>
     </div>,
-    document.body
+    document.body,
   );
 }

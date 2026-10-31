@@ -7,12 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  getProfile,
-  updateUserProfile,
-  addExp as addExpBackend,
-  addCoins as addCoinsBackend,
-} from "../services/userProfileServices";
+import { getProfile, updateUserProfile } from "../services/userProfileServices";
 import { useAuth } from "./AuthContext";
 import { claimDailyQuote } from "../services/quoteServices";
 import { claimStartExpReward } from "../services/taskServices";
