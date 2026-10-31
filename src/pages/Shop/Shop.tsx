@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Cookie, Crown, Footprints, Shirt, type LucideIcon } from "lucide-react";
+import {
+  Cookie,
+  Crown,
+  Footprints,
+  Shirt,
+  type LucideIcon,
+} from "lucide-react";
 import { ApiError } from "../../lib/apiClient";
-import { getShopItems, purchaseShopItem, purchaseTreat } from "../../services/shopServices";
+import {
+  getShopItems,
+  purchaseShopItem,
+  purchaseTreat,
+} from "../../services/shopServices";
 import { useUserProfileContext } from "../../context/UserProfileContext";
 import { usePet } from "../../context/PetContext";
 import { useInventory } from "../../context/InventoryContext";
@@ -10,8 +20,12 @@ import { ItemType } from "../../types/ItemType";
 import type { ShopItemsDto } from "../../types/ShopItemsDto";
 import type { InventoryItemDto } from "../../types/InventoryItemDto";
 import { mockItemArt, TREAT_ART } from "../../data/mockShop";
-import ShopFilterTabs, { type ShopFilter } from "../../components/ShopFilterTab/ShopFilterTab";
-import ShopItemCard, { type ShopCardState } from "../../components/ShopItemCard/ShopItemCard";
+import ShopFilterTabs, {
+  type ShopFilter,
+} from "../../components/ShopFilterTab/ShopFilterTab";
+import ShopItemCard, {
+  type ShopCardState,
+} from "../../components/ShopItemCard/ShopItemCard";
 import type { TreatPurchaseResponseDto } from "../../types/TreatPurchaseDto";
 import { useLocation } from "react-router-dom";
 import type { PetItemPurchaseResponse } from "../../types/PetItemPurchaseResponse";
@@ -23,14 +37,27 @@ const SECTIONS: { type: ItemType; title: string; icon: LucideIcon }[] = [
 ];
 
 // Buyable first, then locked (by level), owned/equipped last
-const STATE_ORDER: Record<ShopCardState, number> = { buyable: 0, locked: 1, owned: 2, equipped: 3 };
+const STATE_ORDER: Record<ShopCardState, number> = {
+  buyable: 0,
+  locked: 1,
+  owned: 2,
+  equipped: 3,
+};
 
 const NOTICE_DURATION_MS = 2500;
 
 // Feedback banner shown under the tabs after a purchase attempt
 type Notice = { kind: "success" | "error"; text: string };
 
-function SectionHeader({ icon: Icon, title, count }: { icon: LucideIcon; title: string; count: number }) {
+function SectionHeader({
+  icon: Icon,
+  title,
+  count,
+}: {
+  icon: LucideIcon;
+  title: string;
+  count: number;
+}) {
   return (
     <div className="mb-2.5 flex items-center justify-between px-1">
       <h3 className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-gray-700">
@@ -60,7 +87,7 @@ function Shop() {
 
   const location = useLocation();
   const [filter, setFilter] = useState<ShopFilter>(
-    (location.state as { filter?: ShopFilter } | null)?.filter ?? "TREATS"
+    (location.state as { filter?: ShopFilter } | null)?.filter ?? "TREATS",
   );
 
   const [items, setItems] = useState<ShopItemsDto[]>([]);
@@ -72,7 +99,9 @@ function Shop() {
   useEffect(() => {
     getShopItems()
       .then(setItems)
-      .catch((err: ApiError) => setError(err.message || "Couldn't load the shop"))
+      .catch((err: ApiError) =>
+        setError(err.message || "Couldn't load the shop"),
+      )
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -105,7 +134,7 @@ function Shop() {
       .sort(
         (a, b) =>
           STATE_ORDER[stateOf(a)] - STATE_ORDER[stateOf(b)] ||
-          a.requiredUserLevel - b.requiredUserLevel
+          a.requiredUserLevel - b.requiredUserLevel,
       );
   }
 
@@ -118,24 +147,28 @@ function Shop() {
     // 1. The API call: only this can be a "failed purchase"
     let res: TreatPurchaseResponseDto;
     try {
-        res = await purchaseTreat(treat.id);
+      res = await purchaseTreat(treat.id);
     } catch (err) {
-        const apiErr = err instanceof ApiError ? err : new ApiError("Purchase failed", 0);
-        setNotice({
+      const apiErr =
+        err instanceof ApiError ? err : new ApiError("Purchase failed", 0);
+      setNotice({
         kind: "error",
-        text: apiErr.status === 422 ? "Not enough citrus for that one" : apiErr.message,
-        });
-        setBuyingId(null);
-        return;
+        text:
+          apiErr.status === 422
+            ? "Not enough citrus for that one"
+            : apiErr.message,
+      });
+      setBuyingId(null);
+      return;
     }
 
     // 2. The purchase succeeded. A bug here must not be reported as a failed purchase.
     try {
-        inventory.upsertItem(res.inventoryItem);
-        syncCoins(res.coins);
+      inventory.upsertItem(res.inventoryItem);
+      syncCoins(res.coins);
     } catch (uiErr) {
-        console.error("Purchase succeeded but updating the UI failed:", uiErr);
-        await inventory.refresh(); // fall back to re-syncing from the server
+      console.error("Purchase succeeded but updating the UI failed:", uiErr);
+      await inventory.refresh(); // fall back to re-syncing from the server
     }
 
     setNotice({ kind: "success", text: `+1 ${treat.treatName}` });
@@ -151,12 +184,16 @@ function Shop() {
     try {
       res = await purchaseShopItem(item.id);
     } catch (err) {
-      const apiErr = err instanceof ApiError ? err : new ApiError("Purchase failed", 0);
+      const apiErr =
+        err instanceof ApiError ? err : new ApiError("Purchase failed", 0);
       const text =
-        apiErr.status === 409 ? "You already own this one" :
-        apiErr.status === 422 ? "Not enough citrus for that one" :
-        apiErr.status === 403 ? `Reach Lv. ${item.requiredUserLevel} to unlock this` :
-        apiErr.message;
+        apiErr.status === 409
+          ? "You already own this one"
+          : apiErr.status === 422
+            ? "Not enough citrus for that one"
+            : apiErr.status === 403
+              ? `Reach Lv. ${item.requiredUserLevel} to unlock this`
+              : apiErr.message;
       setNotice({ kind: "error", text });
       setBuyingId(null);
       return;
@@ -191,7 +228,9 @@ function Shop() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               className={`absolute inset-x-2 top-full mt-1 rounded-2xl px-3 py-2 text-center text-xs font-semibold shadow-sm ${
-                notice.kind === "success" ? "bg-[#F48C42] text-white" : "bg-red-50 text-red-600"
+                notice.kind === "success"
+                  ? "bg-[#F48C42] text-white"
+                  : "bg-red-50 text-red-600"
               }`}
             >
               {notice.text}
@@ -203,7 +242,11 @@ function Shop() {
       {/* Treats: data comes from the inventory (real treat ids + owned quantity) */}
       {showTreats && (
         <section>
-          <SectionHeader icon={Cookie} title="Treats" count={inventory.items.length} />
+          <SectionHeader
+            icon={Cookie}
+            title="Treats"
+            count={inventory.items.length}
+          />
 
           {inventory.isLoading ? (
             <CardGridSkeleton count={3} />
@@ -243,11 +286,17 @@ function Shop() {
         ) : (
           visibleSections.map((section) => {
             const sectionItems = itemsOfType(section.type);
-            const available = sectionItems.filter((i) => stateOf(i) === "buyable").length;
+            const available = sectionItems.filter(
+              (i) => stateOf(i) === "buyable",
+            ).length;
 
             return (
               <section key={section.type}>
-                <SectionHeader icon={section.icon} title={section.title} count={available} />
+                <SectionHeader
+                  icon={section.icon}
+                  title={section.title}
+                  count={available}
+                />
 
                 {sectionItems.length === 0 ? (
                   <p className="rounded-3xl border border-dashed border-[#F5DCD7] py-6 text-center text-sm text-gray-400">
