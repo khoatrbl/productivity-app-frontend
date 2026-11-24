@@ -355,6 +355,14 @@ function Settings() {
                 className="hidden"
               />
             </div>
+            {avatarError && (
+              <p
+                role="alert"
+                className="mt-1 max-w-20 text-center text-[10px] font-medium leading-tight text-red-500"
+              >
+                {avatarError}
+              </p>
+            )}
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
