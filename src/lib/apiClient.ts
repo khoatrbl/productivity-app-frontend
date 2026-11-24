@@ -9,6 +9,11 @@ const apiClient = axios.create({
   },
 });
 
+console.log("========== API CONFIG ==========");
+console.log("API BASE URL:", import.meta.env.VITE_API_BASE_URL);
+console.log("AXIOS BASE URL:", apiClient.defaults.baseURL);
+console.log("================================");
+
 /* ---------- Access token (memory only) ---------- */
 
 let accessToken: string | null = null;
