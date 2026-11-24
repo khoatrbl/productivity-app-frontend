@@ -4,15 +4,11 @@ import { refresh } from "../services/authServices";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
-
-console.log("========== API CONFIG ==========");
-console.log("API BASE URL:", import.meta.env.VITE_API_BASE_URL);
-console.log("AXIOS BASE URL:", apiClient.defaults.baseURL);
-console.log("================================");
 
 /* ---------- Access token (memory only) ---------- */
 
