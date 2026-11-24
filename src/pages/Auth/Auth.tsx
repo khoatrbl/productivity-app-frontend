@@ -39,7 +39,7 @@ function detectTimezone(): string {
 
 function Auth() {
   const navigate = useNavigate();
-  const { setToken, status, authDebug } = useAuth();
+  const { setToken, status } = useAuth();
   const [mode, setMode] = useState<AuthMode>("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -138,9 +138,6 @@ function Auth() {
         ref={formCardRef}
         className="mt-6 w-full max-w-sm rounded-3xl bg-white p-4 shadow-sm"
       >
-        <p className="mt-4 text-center text-xs text-gray-500">
-          Debug: {authDebug}
-        </p>
         <div className="flex rounded-full bg-gray-50 p-1">
           <button
             type="button"

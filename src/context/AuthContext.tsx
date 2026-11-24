@@ -13,7 +13,6 @@ type AuthStatus = "checking" | "authenticated" | "unauthenticated";
 interface AuthContextValue {
   token: string | null;
   status: AuthStatus;
-  authDebug: string;
   setToken: (token: string) => void;
   logout: () => Promise<void>;
 }
@@ -23,7 +22,6 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setTokenState] = useState<string | null>(null);
   const [status, setStatus] = useState<AuthStatus>("checking");
-  const [authDebug, setAuthDebug] = useState("Waiting for refresh...");
 
   const setToken = useCallback((next: string) => {
     setAccessToken(next); // apiClient sees it immediately
@@ -41,21 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
-    setAuthDebug("Attempting session restoration...");
-
     refresh()
       .then(({ token }) => {
-        if (!cancelled) {
-          setAuthDebug("Refresh successful");
-          setToken(token);
-        }
+        if (!cancelled) setToken(token);
       })
-      .catch((error) => {
-        if (!cancelled) {
-          const status = error?.status ?? error?.response?.status ?? "Unknown";
-          setAuthDebug(`Refresh failed. Status: ${status}`);
-          clearSession();
-        }
+      .catch(() => {
+        if (!cancelled) clearSession();
       });
 
     return () => {
@@ -77,9 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearSession]);
 
   return (
-    <AuthContext.Provider
-      value={{ token, status, authDebug, setToken, logout }}
-    >
+    <AuthContext.Provider value={{ token, status, setToken, logout }}>
       {children}
     </AuthContext.Provider>
   );
