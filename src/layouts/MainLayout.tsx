@@ -7,63 +7,85 @@ import { useTasks } from "../context/TaskContext";
 import { TaskCompleteOverlay } from "../components/TaskCompleteOverlay/TaskCompleteOverlay";
 import { useEffect } from "react";
 import { prefetchShopItems } from "../services/shopServices";
+import { usePet } from "../context/PetContext";
+import { preloadPetAssets, whenIdle } from "../utils/preloadPet";
 
 const swipeRoutes = ["/", "/sanctuary", "/calendar", "/shop"];
 const NAV_SWIPE_THRESHOLD = 60;
 const NAV_SWIPE_VELOCITY = 500;
 
 function MainLayout() {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { completion, dismissCompletion } = useTasks();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { completion, dismissCompletion } = useTasks();
+  const { pet } = usePet();
+  const currentIndex = swipeRoutes.indexOf(location.pathname);
 
-    const currentIndex = swipeRoutes.indexOf(location.pathname);
+  useEffect(() => {
+    prefetchShopItems();
+  }, []);
 
-    useEffect(() => {
-        prefetchShopItems();
-    }, []);
+  // Warm up the 3D pet (code, capybara, and whatever it's wearing) in the background
+  useEffect(() => {
+    if (!pet) return;
 
-    const goToPreviousPage = () => {
-        const previousIndex = (currentIndex - 1 + swipeRoutes.length) % swipeRoutes.length;
-        navigate(swipeRoutes[previousIndex]);
-    };
+    const equippedModelUrls = (pet.items ?? [])
+      .filter((item) => item.isEquipped && item.shopItem.modelUrl)
+      .map((item) => item.shopItem.modelUrl!);
 
-    const goToNextPage = () => {
-        const nextIndex = (currentIndex + 1) % swipeRoutes.length;
-        navigate(swipeRoutes[nextIndex]);
-    };
+    return whenIdle(() => preloadPetAssets(equippedModelUrls));
+  }, [pet]);
 
-    function handleDragEnd(_: unknown, info: PanInfo) {
-        const swipedLeft = info.offset.x < -NAV_SWIPE_THRESHOLD || info.velocity.x < -NAV_SWIPE_VELOCITY;
-        const swipedRight = info.offset.x > NAV_SWIPE_THRESHOLD || info.velocity.x > NAV_SWIPE_VELOCITY;
-        if (swipedLeft) goToNextPage();
-        else if (swipedRight) goToPreviousPage();
-    }
+  const goToPreviousPage = () => {
+    const previousIndex =
+      (currentIndex - 1 + swipeRoutes.length) % swipeRoutes.length;
+    navigate(swipeRoutes[previousIndex]);
+  };
 
-    return (
-        <div className="main-layout min-h-screen">
-            <header className="fixed top-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 bg-[#fcf8f2]">
-                <UserProfileCard />
-            </header>
+  const goToNextPage = () => {
+    const nextIndex = (currentIndex + 1) % swipeRoutes.length;
+    navigate(swipeRoutes[nextIndex]);
+  };
 
-            <motion.main
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0}
-                onDragEnd={handleDragEnd}
-                className="page-content pt-[109px] touch-pan-y"
-                style={{ paddingBottom: `calc(${BOTTOM_NAV_TOTAL_HEIGHT} + 1.5rem)` }}
-            >
-                <Outlet />
-            </motion.main>
+  function handleDragEnd(_: unknown, info: PanInfo) {
+    const swipedLeft =
+      info.offset.x < -NAV_SWIPE_THRESHOLD ||
+      info.velocity.x < -NAV_SWIPE_VELOCITY;
+    const swipedRight =
+      info.offset.x > NAV_SWIPE_THRESHOLD ||
+      info.velocity.x > NAV_SWIPE_VELOCITY;
+    if (swipedLeft) goToNextPage();
+    else if (swipedRight) goToPreviousPage();
+  }
 
-            <BottomNavigation onAddTask={() => navigate("/tasks/new")} />
+  return (
+    <div className="main-layout min-h-screen">
+      <header className="fixed top-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 bg-[#fcf8f2]">
+        <UserProfileCard />
+      </header>
 
-            {completion && (
-                <TaskCompleteOverlay key={completion.id} completion={completion} onDismiss={dismissCompletion} />
-            )}
-        </div>
-    );
+      <motion.main
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0}
+        onDragEnd={handleDragEnd}
+        className="page-content pt-[109px] touch-pan-y"
+        style={{ paddingBottom: `calc(${BOTTOM_NAV_TOTAL_HEIGHT} + 1.5rem)` }}
+      >
+        <Outlet />
+      </motion.main>
+
+      <BottomNavigation onAddTask={() => navigate("/tasks/new")} />
+
+      {completion && (
+        <TaskCompleteOverlay
+          key={completion.id}
+          completion={completion}
+          onDismiss={dismissCompletion}
+        />
+      )}
+    </div>
+  );
 }
 
 export default MainLayout;

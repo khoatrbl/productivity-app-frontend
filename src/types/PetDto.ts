@@ -1,9 +1,9 @@
-import type { ShopItemsDto } from "./ShopItemsDto"
-import type { LocalDateTime } from "./TaskCardData"
+import type { ShopItemsDto } from "./ShopItemsDto";
+import type { LocalDateTime } from "./TaskCardData";
 
 export interface PetLevelDto {
-    level: number,
-    threshold: number
+  level: number;
+  threshold: number;
 }
 
 export interface PetItemDto {
@@ -20,9 +20,20 @@ export interface PetDto {
   name: string;
   petCurrentExp: number;
   petCurrentAffectionPoint: number;
+  affectionTier: AffectionTierDto;
   upcomingAffectionGains: number[];
   pettingsLeft: number;
   bonusPets: number;
   petCooldownUntil: string | null; // ISO instant
   items: PetItemDto[];
+}
+
+export type AffectionTierCode = "SHY" | "CONTENT" | "PLAYFUL" | "BEST_BUD";
+
+export interface AffectionTierDto {
+  code: AffectionTierCode;
+  displayName: string;
+  minAffection: number;
+  nextTierAt: number | null;
+  nextTierName: string | null;
 }

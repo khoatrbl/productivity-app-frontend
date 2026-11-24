@@ -1,5 +1,15 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { getMyPet, updatePetName as updatePetNameBackend } from "../services/petServices";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  getMyPet,
+  updatePetName as updatePetNameBackend,
+} from "../services/petServices";
 import type { PetDto, PetItemDto } from "../types/PetDto";
 import { useAuth } from "./AuthContext";
 
@@ -41,7 +51,9 @@ export function PetProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setIsLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const renamePet = useCallback(async (name: string) => {
@@ -54,8 +66,14 @@ export function PetProvider({ children }: { children: ReactNode }) {
   const addPetItem = useCallback((item: PetItemDto) => {
     setPet((prev) =>
       prev
-        ? { ...prev, items: [...(prev.items ?? []).filter((i) => i.id !== item.id), item] }
-        : prev
+        ? {
+            ...prev,
+            items: [
+              ...(prev.items ?? []).filter((i) => i.id !== item.id),
+              item,
+            ],
+          }
+        : prev,
     );
   }, []);
 
@@ -67,12 +85,24 @@ export function PetProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /** Changes the shared pet from its previous value (no-op while the pet is still loading). */
   const updatePet = useCallback((fn: (prev: PetDto) => PetDto) => {
     setPet((prev) => (prev ? fn(prev) : prev));
   }, []);
 
   return (
-    <PetContext.Provider value={{ pet, isLoading, error, renamePet, syncPet, addPetItem, refreshPet, updatePet }}>
+    <PetContext.Provider
+      value={{
+        pet,
+        isLoading,
+        error,
+        renamePet,
+        syncPet,
+        addPetItem,
+        refreshPet,
+        updatePet,
+      }}
+    >
       {children}
     </PetContext.Provider>
   );

@@ -1,6 +1,13 @@
-import { Crown, Footprints, Loader2, Shirt, type LucideIcon } from "lucide-react";
+import {
+  Crown,
+  Footprints,
+  Loader2,
+  Shirt,
+  type LucideIcon,
+} from "lucide-react";
 import type { PetItemDto } from "../../types/PetDto";
 import { ItemType } from "../../types/ItemType";
+import { isImageUrl } from "../../utils/art";
 
 const TYPE_ICON: Record<ItemType, LucideIcon> = {
   [ItemType.HEADWEAR]: Crown,
@@ -14,7 +21,11 @@ interface WardrobeItemCardProps {
   onToggleEquip: () => void;
 }
 
-function WardrobeItemCard({ item, isBusy = false, onToggleEquip }: WardrobeItemCardProps) {
+function WardrobeItemCard({
+  item,
+  isBusy = false,
+  onToggleEquip,
+}: WardrobeItemCardProps) {
   const { shopItem, isEquipped } = item;
   const Icon = TYPE_ICON[shopItem.itemType];
 
@@ -24,8 +35,18 @@ function WardrobeItemCard({ item, isBusy = false, onToggleEquip }: WardrobeItemC
         isEquipped ? "border-emerald-200" : "border-gray-100"
       }`}
     >
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50">
-        <Icon className="h-5 w-5 text-amber-600" />
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-amber-50">
+        {isImageUrl(shopItem.imageUrl) ? (
+          <img
+            src={shopItem.imageUrl}
+            alt=""
+            loading="lazy"
+            draggable={false}
+            className="h-9 w-9 object-contain"
+          />
+        ) : (
+          <Icon className="h-5 w-5 text-amber-600" />
+        )}
       </div>
 
       <div className="min-w-0 flex-1">
@@ -42,7 +63,13 @@ function WardrobeItemCard({ item, isBusy = false, onToggleEquip }: WardrobeItemC
             : "border border-gray-200 text-gray-600 hover:bg-gray-50"
         }`}
       >
-        {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isEquipped ? "Equipped" : "Equip"}
+        {isBusy ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : isEquipped ? (
+          "Equipped"
+        ) : (
+          "Equip"
+        )}
       </button>
     </div>
   );

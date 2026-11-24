@@ -310,7 +310,9 @@ function Shop() {
                         name={item.name}
                         description={item.description}
                         price={item.price}
-                        art={mockItemArt(item.id, item.itemType)}
+                        art={
+                          item.imageUrl ?? mockItemArt(item.id, item.itemType)
+                        }
                         state={stateOf(item)}
                         requiredLevel={item.requiredUserLevel}
                         coins={coins}

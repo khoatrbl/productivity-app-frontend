@@ -17,6 +17,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useUserProfileContext } from "../../context/UserProfileContext";
 import type { PetFortuneDto } from "../../types/PetFortuneDto";
 import { PetLevelUpOverlay } from "../../components/PetLevelUpOverlay.tsx/PetLevelUpOverlay";
+import type {
+  CosmeticSlot,
+  EquippedCosmetic,
+} from "../../components/PetModel/PetModel";
 
 const ITEM_TABS: { value: ItemType; label: string }[] = [
   { value: ItemType.HEADWEAR, label: "Headwear" },
@@ -32,8 +36,13 @@ function Sanctuary() {
   const [itemType, setItemType] = useState<ItemType>(ItemType.HEADWEAR);
 
   const [feedingId, setFeedingId] = useState<string | null>(null);
-  const [xpPop, setXpPop] = useState<{ id: string; amount: number } | null>(null);
-  const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [xpPop, setXpPop] = useState<{ id: string; amount: number } | null>(
+    null,
+  );
+  const [notice, setNotice] = useState<{
+    kind: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const { syncCoins } = useUserProfileContext();
   const [levelUp, setLevelUp] = useState<{
@@ -45,7 +54,23 @@ function Sanctuary() {
 
   const visibleItems = useMemo(
     () => care.items.filter((i) => i.shopItem.itemType === itemType),
-    [care.items, itemType]
+    [care.items, itemType],
+  );
+
+  // Equipped items that have a 3D model → shown on the capybara
+  const equippedCosmetics = useMemo<EquippedCosmetic[]>(
+    () =>
+      care.items
+        .filter(
+          (i) => i.isEquipped && i.shopItem.modelUrl && i.shopItem.socketName,
+        )
+        .map((i) => ({
+          id: i.id,
+          url: i.shopItem.modelUrl!,
+          slot: i.shopItem.itemType as CosmeticSlot,
+          socket: i.shopItem.socketName!,
+        })),
+    [care.items],
   );
 
   useEffect(() => {
@@ -71,11 +96,16 @@ function Sanctuary() {
     try {
       res = await feedPet(treat.id);
     } catch (err) {
-      const apiErr = err instanceof ApiError ? err : new ApiError("Couldn't feed right now", 0);
+      const apiErr =
+        err instanceof ApiError
+          ? err
+          : new ApiError("Couldn't feed right now", 0);
       const text =
-        apiErr.status === 409 ? `${pet?.name ?? "Your capy"} is fully grown!` :
-        apiErr.status === 422 ? "You're out of that treat" :
-        apiErr.message;
+        apiErr.status === 409
+          ? `${pet?.name ?? "Your capy"} is fully grown!`
+          : apiErr.status === 422
+            ? "You're out of that treat"
+            : apiErr.message;
       setNotice({ kind: "error", text });
       setFeedingId(null);
       return;
@@ -84,7 +114,8 @@ function Sanctuary() {
     try {
       syncPet(res.pet);
       inventory.upsertItem(res.inventoryItem);
-      if (res.fortuneInventoryItem) inventory.upsertItem(res.fortuneInventoryItem);
+      if (res.fortuneInventoryItem)
+        inventory.upsertItem(res.fortuneInventoryItem);
       if (typeof res.coins === "number") syncCoins(res.coins);
     } catch (uiErr) {
       console.error("Feed succeeded but updating the UI failed:", uiErr);
@@ -109,7 +140,10 @@ function Sanctuary() {
   async function handleToggleEquip(petItemId: string) {
     const result = await care.toggleEquip(petItemId);
     if (!result.ok && result.reason !== "busy") {
-      setNotice({ kind: "error", text: result.message ?? "Something went wrong" });
+      setNotice({
+        kind: "error",
+        text: result.message ?? "Something went wrong",
+      });
     }
   }
 
@@ -134,7 +168,10 @@ function Sanctuary() {
           isNapping={care.isNapping}
           cooldownMsLeft={care.cooldownMsLeft}
           isAffectionMaxed={care.isAffectionMaxed}
+          affection={care.affection}
+          affectionTier={pet.affectionTier}
           onPet={care.pet}
+          cosmetics={equippedCosmetics}
         />
         <PetInfoCard
           name={pet.name}
@@ -150,7 +187,7 @@ function Sanctuary() {
 
       <section>
         <h3 className="mb-2.5 flex items-center gap-1.5 px-1 text-base font-semibold text-gray-800">
-            <Cookie className="h-4 w-4 text-amber-600" /> Snack Pantry
+          <Cookie className="h-4 w-4 text-amber-600" /> Snack Pantry
         </h3>
 
         <AnimatePresence>
@@ -162,7 +199,9 @@ function Sanctuary() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               className={`rounded-2xl px-3 py-2 text-center text-xs font-semibold shadow-sm ${
-                notice.kind === "success" ? "bg-emerald-700 text-white" : "bg-red-50 text-red-600"
+                notice.kind === "success"
+                  ? "bg-emerald-700 text-white"
+                  : "bg-red-50 text-red-600"
               }`}
             >
               {notice.text}
@@ -171,26 +210,29 @@ function Sanctuary() {
         </AnimatePresence>
 
         {inventory.isLoading ? (
-            <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {Array.from({ length: 3 }, (_, i) => (
-                <div key={i} className="h-40 animate-pulse rounded-3xl bg-gray-100" />
+              <div
+                key={i}
+                className="h-40 animate-pulse rounded-3xl bg-gray-100"
+              />
             ))}
-            </div>
+          </div>
         ) : inventory.error ? (
-            <p className="px-1 text-sm text-red-500">{inventory.error}</p>
+          <p className="px-1 text-sm text-red-500">{inventory.error}</p>
         ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {inventory.items.map((item) => (
-                <SnackCard
-                  key={item.treatDto.id}
-                  item={item}
-                  isFeeding={feedingId === item.treatDto.id}
-                  disabled={!!feedingId && feedingId !== item.treatDto.id}
-                  onFeed={() => handleFeed(item)}
-                  onShop={() => navigate("/shop")}
-                />
-              ))}
-            </div>
+          <div className="grid grid-cols-3 gap-2">
+            {inventory.items.map((item) => (
+              <SnackCard
+                key={item.treatDto.id}
+                item={item}
+                isFeeding={feedingId === item.treatDto.id}
+                disabled={!!feedingId && feedingId !== item.treatDto.id}
+                onFeed={() => handleFeed(item)}
+                onShop={() => navigate("/shop")}
+              />
+            ))}
+          </div>
         )}
       </section>
 
@@ -205,7 +247,9 @@ function Sanctuary() {
               key={tab.value}
               onClick={() => setItemType(tab.value)}
               className={`flex-1 rounded-full py-1.5 text-sm font-medium transition-colors ${
-                itemType === tab.value ? "bg-white text-emerald-800 shadow-sm" : "text-gray-500"
+                itemType === tab.value
+                  ? "bg-white text-emerald-800 shadow-sm"
+                  : "text-gray-500"
               }`}
             >
               {tab.label}
@@ -215,14 +259,22 @@ function Sanctuary() {
 
         <div className="flex flex-col gap-2">
           {visibleItems.map((item) => (
-            <WardrobeItemCard key={item.id} item={item} onToggleEquip={() => handleToggleEquip(item.id)} />
+            <WardrobeItemCard
+              key={item.id}
+              item={item}
+              onToggleEquip={() => handleToggleEquip(item.id)}
+            />
           ))}
 
           {visibleItems.length === 0 && (
             <div className="flex flex-col items-center gap-1 rounded-3xl border border-dashed border-emerald-200 bg-emerald-50/40 py-8 text-center">
-              <p className="text-sm font-semibold text-emerald-800">Nothing here yet</p>
+              <p className="text-sm font-semibold text-emerald-800">
+                Nothing here yet
+              </p>
               <button
-                onClick={() => navigate("/shop", { state: { filter: itemType } })}
+                onClick={() =>
+                  navigate("/shop", { state: { filter: itemType } })
+                }
                 className="text-xs font-medium text-emerald-700 underline"
               >
                 Browse the shop

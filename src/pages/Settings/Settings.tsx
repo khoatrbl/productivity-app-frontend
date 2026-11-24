@@ -1,5 +1,5 @@
 // pages/Settings/Settings.tsx
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -160,7 +160,6 @@ function Settings() {
   const { pet } = usePet();
   const { logout } = useAuth();
 
-  // TODO: map these to your real UserProfileContext fields
   const {
     name,
     email,
@@ -170,7 +169,12 @@ function Settings() {
     maxExp,
     isLoading: isProfileLoading,
     updateDisplayName,
+    updateAvatar,
   } = useUserProfileContext();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
 
   const username = name || "Capy friend";
   const avatarUrl = profileAvatar || defaultAvatar;
@@ -222,6 +226,32 @@ function Settings() {
           ? "That name isn't valid."
           : "Couldn't save. Try again.",
       );
+    }
+  }
+
+  async function handleAvatarSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow picking the same file again later
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setAvatarError("Please choose an image.");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setAvatarError(null);
+    try {
+      await updateAvatar(file);
+    } catch (err) {
+      const apiErr = err instanceof ApiError ? err : null;
+      setAvatarError(
+        apiErr?.status === 400
+          ? apiErr.message || "That image can't be used."
+          : "Couldn't update your photo. Try again.",
+      );
+    } finally {
+      setIsUploadingAvatar(false);
     }
   }
 
@@ -300,13 +330,30 @@ function Settings() {
                 alt="Profile"
                 className="h-16 w-16 rounded-2xl object-cover"
               />
+
+              {isUploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70">
+                  <RefreshCw className="h-5 w-5 animate-spin text-emerald-800" />
+                </div>
+              )}
+
               <button
                 type="button"
                 aria-label="Change photo"
-                className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-emerald-800 text-white"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingAvatar}
+                className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-emerald-800 text-white disabled:opacity-60"
               >
                 <Camera className="h-3 w-3" />
               </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleAvatarSelected}
+                className="hidden"
+              />
             </div>
 
             <div className="min-w-0 flex-1">
