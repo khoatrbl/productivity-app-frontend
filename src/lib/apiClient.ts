@@ -3,7 +3,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { refresh } from "../services/authServices";
 
 const apiClient = axios.create({
-  baseURL: "/api/v1", // relative: Vite proxy in dev, Vercel rewrite in prod
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
