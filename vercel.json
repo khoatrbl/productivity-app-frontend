@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://desktop-e4ve2d2.tail69e61a.ts.net/api/:path*"
+    }
+  ]
+}
