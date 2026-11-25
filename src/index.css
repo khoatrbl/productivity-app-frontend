@@ -1,25 +1,30 @@
 @import "tailwindcss";
 
+/* iOS zooms in when a focused field's font is under 16px. On touch screens,
+   keep every text field at 16px or more; desktop keeps the smaller sizes. */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html,
 body,
 #root {
-    margin: 0;
-    width: 100%;
-    min-height: 100%;
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
 }
 
-
 body {
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "SF Pro Display",
-        "Segoe UI",
-        sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
 
-    background: #fcf9f2;
+  background: #fcf9f2;
 }
