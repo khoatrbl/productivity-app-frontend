@@ -22,6 +22,8 @@ interface PetContextValue {
   addPetItem: (item: PetItemDto) => void;
   refreshPet: () => Promise<void>;
   updatePet: (fn: (prev: PetDto) => PetDto) => void;
+  pendingDecay: number | null;
+  clearPendingDecay: () => void;
 }
 
 const PetContext = createContext<PetContextValue | null>(null);
@@ -31,6 +33,16 @@ export function PetProvider({ children }: { children: ReactNode }) {
   const [pet, setPet] = useState<PetDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Affection lost while away, waiting to be shown. Kept apart from `pet`
+  // so a later fetch or sync (which returns null) can't wipe it.
+  const [pendingDecay, setPendingDecay] = useState<number | null>(null);
+
+  // The server settles decay only ONCE (on the first load after being away).
+  // Whichever response carries it, remember it — never overwrite with null.
+  const rememberDecay = useCallback((data: PetDto) => {
+    const lost = data.affectionLostSinceLastVisit;
+    if (lost && lost > 0) setPendingDecay(lost);
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -39,10 +51,12 @@ export function PetProvider({ children }: { children: ReactNode }) {
 
     getMyPet()
       .then((data) => {
-        if (!cancelled) {
-          setPet(data);
-          setError(null);
-        }
+        // Even a cancelled request (StrictMode's first run) already settled
+        // the decay on the server, so its announcement must not be lost.
+        rememberDecay(data);
+        if (cancelled) return;
+        setPet(data);
+        setError(null);
       })
       .catch((err) => {
         if (!cancelled) setError(err.message ?? "Couldn't load your companion");
@@ -54,7 +68,9 @@ export function PetProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, rememberDecay]);
+
+  const clearPendingDecay = useCallback(() => setPendingDecay(null), []);
 
   const renamePet = useCallback(async (name: string) => {
     const updated = await updatePetNameBackend(name);
@@ -79,11 +95,13 @@ export function PetProvider({ children }: { children: ReactNode }) {
 
   const refreshPet = useCallback(async () => {
     try {
-      setPet(await getMyPet());
+      const data = await getMyPet();
+      rememberDecay(data); // a refresh can settle decay too (e.g. first load of the day)
+      setPet(data);
     } catch (err) {
       console.error("Couldn't refresh pet:", err);
     }
-  }, []);
+  }, [rememberDecay]);
 
   /** Changes the shared pet from its previous value (no-op while the pet is still loading). */
   const updatePet = useCallback((fn: (prev: PetDto) => PetDto) => {
@@ -101,6 +119,8 @@ export function PetProvider({ children }: { children: ReactNode }) {
         addPetItem,
         refreshPet,
         updatePet,
+        pendingDecay,
+        clearPendingDecay,
       }}
     >
       {children}

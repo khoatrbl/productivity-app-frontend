@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cookie, Shirt } from "lucide-react";
+import { Cookie, Heart, Shirt } from "lucide-react";
 import { usePet } from "../../context/PetContext";
 import { usePetCare } from "../../hooks/usePetCare";
 import { ItemType } from "../../types/ItemType";
@@ -28,9 +28,20 @@ const ITEM_TABS: { value: ItemType; label: string }[] = [
   { value: ItemType.FOOTWEAR, label: "Footwear" },
 ];
 
+const NOTICE_DURATION_MS = 2500;
+const DECAY_NOTICE_DURATION_MS = 6000; // a message to read, not a quick confirmation
+
 function Sanctuary() {
   const navigate = useNavigate();
-  const { pet, isLoading, error, renamePet, syncPet } = usePet();
+  const {
+    pet,
+    isLoading,
+    error,
+    renamePet,
+    syncPet,
+    pendingDecay,
+    clearPendingDecay,
+  } = usePet();
   const care = usePetCare(pet); // called unconditionally; handles pet === null
   const inventory = useInventory();
   const [itemType, setItemType] = useState<ItemType>(ItemType.HEADWEAR);
@@ -39,10 +50,15 @@ function Sanctuary() {
   const [xpPop, setXpPop] = useState<{ id: string; amount: number } | null>(
     null,
   );
+
+  // Action feedback (feeding / equipping) — shown under the Snack Pantry heading
   const [notice, setNotice] = useState<{
     kind: "success" | "error";
     text: string;
   } | null>(null);
+
+  // "Missed you" message — shown right below the pet
+  const [decayNotice, setDecayNotice] = useState<string | null>(null);
 
   const { syncCoins } = useUserProfileContext();
   const [levelUp, setLevelUp] = useState<{
@@ -75,9 +91,15 @@ function Sanctuary() {
 
   useEffect(() => {
     if (!notice) return;
-    const id = setTimeout(() => setNotice(null), 2500);
+    const id = setTimeout(() => setNotice(null), NOTICE_DURATION_MS);
     return () => clearTimeout(id);
   }, [notice]);
+
+  useEffect(() => {
+    if (!decayNotice) return;
+    const id = setTimeout(() => setDecayNotice(null), DECAY_NOTICE_DURATION_MS);
+    return () => clearTimeout(id);
+  }, [decayNotice]);
 
   useEffect(() => {
     if (care.petError) {
@@ -85,6 +107,15 @@ function Sanctuary() {
       care.clearPetError();
     }
   }, [care.petError]);
+
+  // Affection faded while away: a warm nudge, shown once, then cleared
+  useEffect(() => {
+    if (!pet || !pendingDecay) return;
+    setDecayNotice(
+      `${pet.name} missed you! A few pets or a finished quest will cheer them up 💛`,
+    );
+    clearPendingDecay();
+  }, [pet, pendingDecay, clearPendingDecay]);
 
   async function handleFeed(entry: InventoryItemDto) {
     const treat = entry.treatDto;
@@ -112,7 +143,7 @@ function Sanctuary() {
     }
 
     try {
-      syncPet(res.pet);
+      syncPet(res.pet); // includes settled decay and the restarted activity clock
       inventory.upsertItem(res.inventoryItem);
       if (res.fortuneInventoryItem)
         inventory.upsertItem(res.fortuneInventoryItem);
@@ -173,6 +204,25 @@ function Sanctuary() {
           onPet={care.pet}
           cosmetics={equippedCosmetics}
         />
+
+        <AnimatePresence>
+          {decayNotice && (
+            <motion.button
+              key="decay-notice"
+              type="button"
+              role="status"
+              onClick={() => setDecayNotice(null)} // tap to dismiss
+              initial={{ opacity: 0, y: -6, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -6, height: 0 }}
+              className="flex items-center gap-2 overflow-hidden rounded-2xl bg-amber-50 px-3 py-2.5 text-left text-xs font-semibold text-amber-800 shadow-sm ring-1 ring-amber-100"
+            >
+              <Heart className="h-4 w-4 shrink-0 fill-amber-300 text-amber-500" />
+              <span>{decayNotice}</span>
+            </motion.button>
+          )}
+        </AnimatePresence>
+
         <PetInfoCard
           name={pet.name}
           level={care.level}
@@ -198,7 +248,7 @@ function Sanctuary() {
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              className={`rounded-2xl px-3 py-2 text-center text-xs font-semibold shadow-sm ${
+              className={`mb-2 rounded-2xl px-3 py-2 text-center text-xs font-semibold shadow-sm ${
                 notice.kind === "success"
                   ? "bg-emerald-700 text-white"
                   : "bg-red-50 text-red-600"

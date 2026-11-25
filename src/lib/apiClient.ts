@@ -10,6 +10,9 @@ const apiClient = axios.create({
   },
 });
 
+console.log("VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+console.log("Axios baseURL:", apiClient.defaults.baseURL);
+
 /* ---------- Access token (memory only) ---------- */
 
 let accessToken: string | null = null;

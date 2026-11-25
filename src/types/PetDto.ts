@@ -25,6 +25,7 @@ export interface PetDto {
   pettingsLeft: number;
   bonusPets: number;
   petCooldownUntil: string | null; // ISO instant
+  affectionLostSinceLastVisit: number | null;
   items: PetItemDto[];
 }
 

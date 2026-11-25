@@ -196,12 +196,12 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      if (bonusPets > 0) {
-        try {
-          await refreshPet(); // the Sanctuary picks up the new bonus pets and stream
-        } catch (err) {
-          console.error("Failed to refresh pet:", err);
-        }
+      // The pet changed on the server after EVERY finish: decay settled,
+      // activity clock restarted, and maybe bonus pets granted.
+      try {
+        await refreshPet();
+      } catch (err) {
+        console.error("Failed to refresh pet:", err);
       }
 
       setCompletion({

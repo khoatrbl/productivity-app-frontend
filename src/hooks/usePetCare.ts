@@ -23,13 +23,27 @@ export type EquipResult =
 
 const NO_ITEMS: PetItemDto[] = [];
 
+/** Same rule as the server: one equipped item per itemType. */
+function applyEquip(
+  items: PetItemDto[],
+  petItemId: string,
+  willEquip: boolean,
+): PetItemDto[] {
+  const target = items.find((i) => i.id === petItemId);
+  if (!target) return items;
+  const type = target.shopItem.itemType;
+  return items.map((i) => {
+    if (i.id === petItemId) return { ...i, isEquipped: willEquip };
+    if (willEquip && i.shopItem.itemType === type)
+      return { ...i, isEquipped: false };
+    return i;
+  });
+}
+
 export function usePetCare(pet: PetDto | null) {
   const { syncPet, updatePet, refreshPet } = usePet();
   const [now, setNow] = useState(Date.now());
-  const [equippingId, setEquippingId] = useState<string | null>(null);
   const [petError, setPetError] = useState<string | null>(null);
-
-  const equipInFlight = useRef(false);
 
   // The wardrobe IS the shared pet's items: one source of truth for the
   // Sanctuary, the Shop and the 3D model, which survives leaving the page.
@@ -44,6 +58,11 @@ export function usePetCare(pet: PetDto | null) {
   // Petting requests run one after another, in tap order
   const petQueue = useRef<Promise<void>>(Promise.resolve());
   const pendingPets = useRef(0);
+
+  // Equip saves run one after another, in tap order
+  const equipQueue = useRef<Promise<void>>(Promise.resolve());
+  const pendingEquips = useRef(0);
+  const equipFailed = useRef(false);
 
   // ---------- Petting: derived state ----------
 
@@ -177,83 +196,88 @@ export function usePetCare(pet: PetDto | null) {
 
   const clearPetError = useCallback(() => setPetError(null), []);
 
-  // ---------- Wardrobe ----------
+  // ---------- Wardrobe: optimistic equip ----------
 
   const toggleEquip = useCallback(
-    async (petItemId: string): Promise<EquipResult> => {
-      if (equipInFlight.current) return { ok: false, reason: "busy" };
+    (petItemId: string): Promise<EquipResult> => {
+      const current = petRef.current;
+      const target = (current?.items ?? []).find((i) => i.id === petItemId);
 
-      const target = (petRef.current?.items ?? []).find(
-        (i) => i.id === petItemId,
-      );
-      if (!target) {
-        await refreshPet();
-        return {
-          ok: false,
-          reason: "not_found",
+      if (!current || !target) {
+        return refreshPet().then(() => ({
+          ok: false as const,
+          reason: "not_found" as const,
           message: "That item isn't available anymore.",
-        };
+        }));
       }
 
-      // Decide the desired state once; send it and mirror it locally
+      // Decide from the LATEST local state, so fast taps toggle correctly
       const willEquip = !target.isEquipped;
-      const type = target.shopItem.itemType;
 
-      equipInFlight.current = true;
-      setEquippingId(petItemId);
+      // 1. Instant UI update (wardrobe card + 3D model)
+      const optimistic: PetDto = {
+        ...current,
+        items: applyEquip(current.items ?? [], petItemId, willEquip),
+      };
+      petRef.current = optimistic; // the next fast tap sees this immediately
+      updatePet((prev) => ({
+        ...prev,
+        items: applyEquip(prev.items ?? [], petItemId, willEquip),
+      }));
 
-      try {
-        await updatePetItemState(petItemId, willEquip);
+      // 2. Save in the background, in tap order, so the server ends in the same state
+      pendingEquips.current += 1;
 
-        // Save it in the SHARED pet (PetContext), not local state, so it survives
-        // navigation. Mirrors the server rule: one equipped item per itemType.
-        updatePet((prev) => {
-          const nextItems = (prev.items ?? []).map((i) => {
-            if (i.id === petItemId) return { ...i, isEquipped: willEquip };
-            if (willEquip && i.shopItem.itemType === type)
-              return { ...i, isEquipped: false };
-            return i;
-          });
-          const next = { ...prev, items: nextItems };
-          petRef.current = next; // keep fast follow-up taps consistent
-          return next;
-        });
+      const result: Promise<EquipResult> = equipQueue.current.then(async () => {
+        let outcome: EquipResult;
+        try {
+          await updatePetItemState(petItemId, willEquip);
+          outcome = { ok: true };
+        } catch (error) {
+          equipFailed.current = true;
+          const apiError =
+            error instanceof ApiError
+              ? error
+              : new ApiError("Couldn't equip/unequip pet item.", 0);
 
-        return { ok: true };
-      } catch (error) {
-        const apiError =
-          error instanceof ApiError
-            ? error
-            : new ApiError("Couldn't equip/unequip pet item.", 0);
+          if (apiError.status === 404) {
+            outcome = {
+              ok: false,
+              reason: "not_found",
+              message: "That item isn't available anymore.",
+            };
+          } else if (apiError.status === 0) {
+            outcome = {
+              ok: false,
+              reason: "network",
+              message:
+                "Couldn't save your capy's outfit. Check your connection.",
+            };
+          } else {
+            console.error("Equip failed:", apiError);
+            outcome = {
+              ok: false,
+              reason: "error",
+              message:
+                apiError.message || "Couldn't update your capy's outfit.",
+            };
+          }
+        }
 
-        if (apiError.status === 404) {
-          // Our copy is stale (item, pet or user no longer exists on the server): resync
+        pendingEquips.current -= 1;
+
+        // 3. Once every queued save is done: if any failed, the UI may be ahead
+        //    of the server, so reload the real state (this undoes what failed)
+        if (pendingEquips.current === 0 && equipFailed.current) {
+          equipFailed.current = false;
           await refreshPet();
-          return {
-            ok: false,
-            reason: "not_found",
-            message: "That item isn't available anymore.",
-          };
         }
 
-        if (apiError.status === 0) {
-          return {
-            ok: false,
-            reason: "network",
-            message: "Couldn't reach the server. Try again.",
-          };
-        }
+        return outcome;
+      });
 
-        console.error("Equip failed:", apiError);
-        return {
-          ok: false,
-          reason: "error",
-          message: apiError.message || "Couldn't update your capy's outfit.",
-        };
-      } finally {
-        equipInFlight.current = false;
-        setEquippingId(null);
-      }
+      equipQueue.current = result.then(() => undefined); // keep the queue a Promise<void>
+      return result;
     },
     [updatePet, refreshPet],
   );
@@ -275,6 +299,5 @@ export function usePetCare(pet: PetDto | null) {
     petError,
     clearPetError,
     toggleEquip,
-    equippingId,
   };
 }
