@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import {
   CheckCircle2,
   Circle,
@@ -14,6 +15,10 @@ import { formatDueDateTime } from "../../utils/taskFormatter";
 import PriorityBadge from "../PriorityBadge/PriorityBadge";
 
 const START_TASK_XP = 15;
+
+// Taps on these never collapse the card (they have their own job)
+const INTERACTIVE_SELECTOR =
+  "button, a, input, textarea, select, label, [role='button'], [role='checkbox'], [data-no-collapse]";
 
 interface ExpandedTaskCardProps {
   task: TaskDto;
@@ -43,8 +48,26 @@ function ExpandedTaskCard({
   const isComplete = task.status === TaskStatus.COMPLETE;
   const hasSubtasks = task.subTasks.length > 0;
 
+  // Tap anywhere on the card (except buttons etc.) to collapse it
+  function handleCardClick(e: MouseEvent<HTMLDivElement>) {
+    if (!isCollapsible) return;
+
+    const target = e.target as HTMLElement;
+    if (target.closest(INTERACTIVE_SELECTOR)) return;
+
+    // The user was selecting text (e.g. copying the description), not tapping
+    if (window.getSelection()?.toString()) return;
+
+    onCollapse();
+  }
+
   return (
-    <div className="rounded-3xl border border-orange-200 bg-white p-5 shadow-sm">
+    <div
+      onClick={handleCardClick}
+      className={`rounded-3xl border border-orange-200 bg-white p-5 shadow-sm ${
+        isCollapsible ? "cursor-pointer" : ""
+      }`}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full border-2 border-orange-400" />
@@ -108,14 +131,12 @@ function ExpandedTaskCard({
               <ListChecks className="h-4 w-4" />
               Micro-Steps ({completedCount}/{task.subTasks.length})
             </div>
-            {/* <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
-              +10 XP each
-            </span> */}
           </div>
 
-          <ul className="mt-3 space-y-2">
+          {/* A tap on a locked (disabled) step shouldn't fold the card away */}
+          <ul className="mt-3 space-y-2" data-no-collapse>
             {task.subTasks.map((sub, index) => (
-              <li key={index}>
+              <li key={sub.id}>
                 <button
                   type="button"
                   onClick={() => onToggleSubtask(index)}
@@ -150,7 +171,8 @@ function ExpandedTaskCard({
         </>
       )}
 
-      <div className="mt-5">
+      {/* The action row: taps in the gaps between buttons don't collapse either */}
+      <div className="mt-5" data-no-collapse>
         {task.status === TaskStatus.INCOMPLETE && (
           <button
             onClick={onStart}
