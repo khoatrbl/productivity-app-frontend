@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect, type SubmitEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { LogIn, Smile, Eye, EyeOff, Rocket, Globe } from "lucide-react";
+import {
+  LogIn,
+  Smile,
+  Eye,
+  EyeOff,
+  Rocket,
+  Globe,
+  CheckCircle2,
+  Circle,
+} from "lucide-react";
 import { login, register } from "../../services/authServices";
 import { useAuth } from "../../context/AuthContext";
 import { ApiError } from "../../lib/apiClient";
@@ -19,6 +28,23 @@ const FALLBACK_TIMEZONES = [
   "Asia/Tokyo",
   "Asia/Kolkata",
   "Australia/Sydney",
+];
+
+const PASSWORD_MIN = 8;
+const PASSWORD_MAX = 100;
+
+// Must match the backend's @Size and @Pattern on rawPassword
+const PASSWORD_RULES: { label: string; test: (pw: string) => boolean }[] = [
+  {
+    label: `${PASSWORD_MIN}–${PASSWORD_MAX} characters`,
+    test: (pw) => pw.length >= PASSWORD_MIN && pw.length <= PASSWORD_MAX,
+  },
+  { label: "One uppercase letter", test: (pw) => /[A-Z]/.test(pw) },
+  { label: "One number", test: (pw) => /\d/.test(pw) },
+  {
+    label: "One special character (e.g. ! @ # ?)",
+    test: (pw) => /[^A-Za-z0-9]/.test(pw),
+  },
 ];
 
 function getTimezoneOptions(): string[] {
@@ -55,10 +81,7 @@ function Auth() {
 
   const timezoneOptions = getTimezoneOptions();
 
-  if (status === "authenticated") {
-    return <Navigate to="/" replace />;
-  }
-
+  // Hooks must all run before any early return
   useEffect(() => {
     if (mode === "register") {
       formCardRef.current?.scrollIntoView({
@@ -68,13 +91,35 @@ function Auth() {
     }
   }, [mode]);
 
+  const ruleResults = PASSWORD_RULES.map((rule) => ({
+    label: rule.label,
+    passed: rule.test(rawPassword),
+  }));
+  const allRulesPassed = ruleResults.every((r) => r.passed);
+  const passwordsMatch =
+    confirmPassword.length > 0 && rawPassword === confirmPassword;
+
+  // Only bounce users who OPEN this page already logged in. While a submit is
+  // running, handleSubmit decides where to go (register → name-pet).
+  if (status === "authenticated" && !isSubmitting) {
+    return <Navigate to="/" replace />;
+  }
+
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
-    if (mode === "register" && rawPassword !== confirmPassword) {
-      setError("Passwords don't match — give it another look.");
-      return;
+    if (mode === "register") {
+      if (!allRulesPassed) {
+        setError(
+          "Your password needs a little more — check the list below it.",
+        );
+        return;
+      }
+      if (rawPassword !== confirmPassword) {
+        setError("Passwords don't match — give it another look.");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -96,7 +141,10 @@ function Auth() {
         sessionStorage.setItem("justLoggedIn", "true");
         navigate("/onboarding/name-pet"); // only register goes here — every future login goes straight to "/"
       }
+      // Success: stay "submitting" until this page unmounts, so the
+      // authenticated redirect above can't jump ahead of navigate()
     } catch (err) {
+      setIsSubmitting(false); // failed: let the user try again
       if (err instanceof ApiError) {
         setError(
           err.status === 401
@@ -106,8 +154,6 @@ function Auth() {
       } else {
         setError("Something went wrong — check your connection and try again.");
       }
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -116,6 +162,7 @@ function Auth() {
       <div className="relative">
         <img
           src={capyDoLogo}
+          alt="CapyDo"
           className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-4xl"
         />
 
@@ -261,7 +308,13 @@ function Auth() {
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                minLength={mode === "register" ? 8 : undefined}
+                maxLength={mode === "register" ? PASSWORD_MAX : undefined}
+                autoComplete={
+                  mode === "register" ? "new-password" : "current-password"
+                }
+                aria-describedby={
+                  mode === "register" ? "password-rules" : undefined
+                }
                 value={rawPassword}
                 onChange={(e) => setRawPassword(e.target.value)}
                 placeholder="Keep it cozy & memorable"
@@ -270,6 +323,7 @@ function Auth() {
               <button
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
                 className="text-gray-400"
               >
                 {showPassword ? (
@@ -279,6 +333,33 @@ function Auth() {
                 )}
               </button>
             </div>
+
+            {/* Live password checklist (register only) */}
+            {mode === "register" && (
+              <ul
+                id="password-rules"
+                className="mt-2 grid grid-cols-1 gap-1 rounded-2xl bg-gray-50/60 px-3 py-2.5"
+              >
+                {ruleResults.map((rule) => (
+                  <li
+                    key={rule.label}
+                    className={`flex items-center gap-1.5 text-[11px] transition-colors ${
+                      rule.passed ? "text-emerald-700" : "text-gray-400"
+                    }`}
+                  >
+                    {rule.passed ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{rule.label}</span>
+                    <span className="sr-only">
+                      {rule.passed ? "(done)" : "(not yet)"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {mode === "register" && (
@@ -286,17 +367,32 @@ function Auth() {
               <label className="text-xs font-semibold tracking-wide text-gray-600">
                 CONFIRM PASSWORD
               </label>
-              <div className="mt-1.5 flex items-center gap-2 rounded-2xl bg-gray-50 px-4 py-3">
+              <div
+                className={`mt-1.5 flex items-center gap-2 rounded-2xl bg-gray-50 px-4 py-3 ${
+                  confirmPassword && !passwordsMatch
+                    ? "ring-2 ring-red-200"
+                    : ""
+                }`}
+              >
                 <span className="text-gray-400">🔑</span>
                 <input
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="One more time, just to be safe"
                   className="w-full bg-transparent text-base text-gray-700 outline-none placeholder:text-gray-300"
                 />
+                {passwordsMatch && (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                )}
               </div>
+              {confirmPassword && !passwordsMatch && (
+                <p className="mt-1 text-[11px] text-red-500">
+                  Doesn't match yet
+                </p>
+              )}
             </div>
           )}
 
@@ -305,7 +401,7 @@ function Auth() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-800 py-3.5 text-sm font-semibold text-white hover:bg-emerald-900"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-800 py-3.5 text-sm font-semibold text-white hover:bg-emerald-900 disabled:opacity-60"
           >
             {isSubmitting
               ? "One moment..."

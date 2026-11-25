@@ -12,22 +12,37 @@ interface PetInfoCardProps {
   affection: number; // 0–100
   canRename: boolean;
   onRename: (name: string) => Promise<void>;
-  xpPop?: {id: string, amount: number} | null;
+  xpPop?: { id: string; amount: number } | null;
 }
 
-function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename, xpPop }: PetInfoCardProps) {
+function PetInfoCard({
+  name,
+  level,
+  exp,
+  maxExp,
+  affection,
+  canRename,
+  onRename,
+  xpPop,
+}: PetInfoCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(name);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { if (isEditing) inputRef.current?.focus(); }, [isEditing]);
-  useEffect(() => { if (!isEditing) setDraft(name); }, [name, isEditing]);
+  useEffect(() => {
+    if (isEditing) inputRef.current?.focus();
+  }, [isEditing]);
+  useEffect(() => {
+    if (!isEditing) setDraft(name);
+  }, [name, isEditing]);
 
-  const expPercent = maxExp > 0 ? Math.min(100, Math.round((exp / maxExp) * 100)) : 0;
+  const expPercent =
+    maxExp > 0 ? Math.min(100, Math.round((exp / maxExp) * 100)) : 0;
   const trimmed = draft.trim();
-  const isValid = trimmed.length > 0 && trimmed.length <= MAX_NAME_LENGTH && trimmed !== name;
+  const isValid =
+    trimmed.length > 0 && trimmed.length <= MAX_NAME_LENGTH && trimmed !== name;
 
   async function save() {
     if (!isValid || isSaving) return;
@@ -37,7 +52,9 @@ function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename,
       await onRename(trimmed);
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't rename right now");
+      setError(
+        err instanceof Error ? err.message : "Couldn't rename right now",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -64,7 +81,11 @@ function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename,
               }}
               className="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-emerald-50/40 px-3 py-1.5 text-lg font-semibold text-gray-900 outline-none focus:border-emerald-400"
             />
-            <button onClick={cancel} aria-label="Cancel rename" className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100">
+            <button
+              onClick={cancel}
+              aria-label="Cancel rename"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100"
+            >
               <X className="h-4 w-4" />
             </button>
             <button
@@ -78,7 +99,9 @@ function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename,
           </div>
         ) : (
           <div className="flex min-w-0 items-center gap-1.5">
-            <h2 className="truncate text-xl font-semibold text-gray-900">{name}</h2>
+            <h2 className="truncate text-xl font-semibold text-gray-900">
+              {name}
+            </h2>
             {canRename && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -99,7 +122,9 @@ function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename,
       </div>
 
       {isEditing && (
-        <p className={`mt-1 text-xs ${error ? "text-red-500" : "text-amber-600"}`}>
+        <p
+          className={`mt-1 text-xs ${error ? "text-red-500" : "text-amber-600"}`}
+        >
           {error ?? "Heads up: you can only rename your pet once."}
         </p>
       )}
@@ -109,10 +134,15 @@ function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename,
           <span className="flex items-center gap-1 font-medium text-gray-600">
             <Sparkles className="h-3.5 w-3.5 text-emerald-600" /> Pet XP
           </span>
-          <span className="text-gray-400">{exp} / {maxExp}</span>
+          <span className="text-gray-400">
+            {exp} / {maxExp}
+          </span>
         </div>
         <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-gray-100">
-          <div className="h-full rounded-full bg-emerald-600 transition-[width] duration-500" style={{ width: `${expPercent}%` }} />
+          <div
+            className="h-full rounded-full bg-emerald-600 transition-[width] duration-500"
+            style={{ width: `${expPercent}%` }}
+          />
         </div>
 
         <AnimatePresence>
@@ -133,12 +163,16 @@ function PetInfoCard({ name, level, exp, maxExp, affection, canRename, onRename,
       <div className="mt-3 rounded-2xl border border-rose-100 bg-rose-50/50 px-3 py-2.5">
         <div className="flex items-center justify-between text-xs">
           <span className="flex items-center gap-1 font-medium text-gray-600">
-            <Heart className="h-3.5 w-3.5 fill-rose-400 text-rose-400" /> Affection
+            <Heart className="h-3.5 w-3.5 fill-rose-400 text-rose-400" />{" "}
+            Affection
           </span>
           <span className="font-semibold text-rose-500">{affection}%</span>
         </div>
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-rose-100">
-          <div className="h-full rounded-full bg-rose-400 transition-[width] duration-500" style={{ width: `${affection}%` }} />
+          <div
+            className="h-full rounded-full bg-rose-400 transition-[width] duration-500"
+            style={{ width: `${affection}%` }}
+          />
         </div>
       </div>
     </div>

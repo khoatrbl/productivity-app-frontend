@@ -31,10 +31,16 @@ function NamePet() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-[#fcf8f2] px-6 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-4xl">🦫</div>
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-4xl">
+        🦫
+      </div>
       <div>
-        <h1 className="text-xl font-bold text-emerald-900">Welcome! One last thing...</h1>
-        <p className="mt-1 text-sm text-gray-500">Want to name your companion, or keep it as-is?</p>
+        <h1 className="text-xl font-bold text-emerald-900">
+          Welcome! One last thing...
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Want to name your companion, or keep it as-is?
+        </p>
       </div>
 
       <input
