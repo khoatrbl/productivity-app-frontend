@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePet } from "../../context/PetContext";
+import { PET_NAME_MAX, PET_NAME_MIN } from "../../constants/petName";
 
 function NamePet() {
   const navigate = useNavigate();
@@ -10,13 +11,18 @@ function NamePet() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleSave() {
-    if (!name.trim()) {
+    const trimmed = name.trim();
+    if (!trimmed) {
       setError("Give your companion a name, or skip for now.");
+      return;
+    }
+    if (trimmed.length < PET_NAME_MIN) {
+      setError(`A little longer — at least ${PET_NAME_MIN} characters.`);
       return;
     }
     setIsSubmitting(true);
     try {
-      await renamePet(name.trim());
+      await renamePet(trimmed);
       navigate("/", { replace: true });
     } catch {
       setError("Couldn't save that — try again.");
@@ -43,13 +49,21 @@ function NamePet() {
         </p>
       </div>
 
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="e.g. Mochi"
-        maxLength={30}
-        className="w-full max-w-xs rounded-2xl bg-white px-4 py-3 text-center text-base text-gray-800 shadow-sm outline-none placeholder:text-gray-300"
-      />
+      <div className="w-full max-w-xs">
+        <input
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setError(null);
+          }}
+          placeholder="e.g. Mochi"
+          maxLength={PET_NAME_MAX}
+          className="w-full rounded-2xl bg-white px-4 py-3 text-center text-base text-gray-800 shadow-sm outline-none placeholder:text-gray-300"
+        />
+        <p className="mt-1 text-[11px] text-gray-400">
+          {PET_NAME_MIN}–{PET_NAME_MAX} characters
+        </p>
+      </div>
 
       {error && <p className="text-xs font-medium text-red-500">{error}</p>}
 

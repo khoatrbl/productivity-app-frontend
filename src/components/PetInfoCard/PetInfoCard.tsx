@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Heart, Pencil, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
-const MAX_NAME_LENGTH = 20;
+import { PET_NAME_MAX, PET_NAME_MIN } from "../../constants/petName";
 
 interface PetInfoCardProps {
   name: string;
@@ -10,7 +9,6 @@ interface PetInfoCardProps {
   exp: number;
   maxExp: number;
   affection: number; // 0–100
-  canRename: boolean;
   onRename: (name: string) => Promise<void>;
   xpPop?: { id: string; amount: number } | null;
 }
@@ -21,7 +19,6 @@ function PetInfoCard({
   exp,
   maxExp,
   affection,
-  canRename,
   onRename,
   xpPop,
 }: PetInfoCardProps) {
@@ -42,7 +39,13 @@ function PetInfoCard({
     maxExp > 0 ? Math.min(100, Math.round((exp / maxExp) * 100)) : 0;
   const trimmed = draft.trim();
   const isValid =
-    trimmed.length > 0 && trimmed.length <= MAX_NAME_LENGTH && trimmed !== name;
+    trimmed.length >= PET_NAME_MIN &&
+    trimmed.length <= PET_NAME_MAX &&
+    trimmed !== name;
+  const isTooShort = trimmed.length > 0 && trimmed.length < PET_NAME_MIN;
+
+  const message =
+    error ?? (isTooShort ? `At least ${PET_NAME_MIN} characters.` : null);
 
   async function save() {
     if (!isValid || isSaving) return;
@@ -73,8 +76,11 @@ function PetInfoCard({
             <input
               ref={inputRef}
               value={draft}
-              maxLength={MAX_NAME_LENGTH}
-              onChange={(e) => setDraft(e.target.value)}
+              maxLength={PET_NAME_MAX}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                setError(null);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") save();
                 if (e.key === "Escape") cancel();
@@ -102,15 +108,13 @@ function PetInfoCard({
             <h2 className="truncate text-xl font-semibold text-gray-900">
               {name}
             </h2>
-            {canRename && (
-              <button
-                onClick={() => setIsEditing(true)}
-                aria-label="Rename your pet"
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-emerald-700"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-            )}
+            <button
+              onClick={() => setIsEditing(true)}
+              aria-label="Rename your pet"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-emerald-700"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
 
@@ -121,12 +125,8 @@ function PetInfoCard({
         )}
       </div>
 
-      {isEditing && (
-        <p
-          className={`mt-1 text-xs ${error ? "text-red-500" : "text-amber-600"}`}
-        >
-          {error ?? "Heads up: you can only rename your pet once."}
-        </p>
+      {isEditing && message && (
+        <p className="mt-1 text-xs text-red-500">{message}</p>
       )}
 
       <div className="relative mt-3">

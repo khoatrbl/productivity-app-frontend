@@ -229,7 +229,6 @@ function Sanctuary() {
           exp={care.exp}
           maxExp={care.maxExp}
           affection={care.affection}
-          canRename={true}
           onRename={renamePet}
           xpPop={xpPop}
         />
